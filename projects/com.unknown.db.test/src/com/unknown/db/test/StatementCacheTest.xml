@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<statements>
+	<sql id="get-time"><![CDATA[
+		SELECT CURRENT TIMESTAMP AS DBTIME FROM SYSIBM.SYSDUMMY1
+	]]></sql>
+	<sql id="ping"><![CDATA[
+		SELECT *
+		FROM SYSIBM.SYSDUMMY1
+	]]></sql>
+</statements>

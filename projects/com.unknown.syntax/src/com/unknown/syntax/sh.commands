@@ -1,0 +1,157 @@
+[
+base64
+basename
+cat
+chcon
+chgrp
+chmod
+chown
+chroot
+cksum
+comm
+cp
+csplit
+cut
+date
+dd
+df
+dir
+dircolors
+dirname
+du
+echo
+env
+expand
+expr
+factor
+false
+fmt
+fold
+head
+hostid
+id
+install
+join
+link
+ln
+logname
+ls
+md5sum
+mkdir
+mkfifo
+mknod
+mktmp
+mv
+nice
+nl
+nohup
+nproc
+numfmt
+od
+paste
+pathchk
+pinky
+pr
+printenv
+printf
+ptx
+pwd
+readlink
+realpath
+rm
+rmdir
+runcon
+seq
+sha1sum
+sah224sum
+sha256sum
+sha384sum
+sha512sum
+shred
+shuf
+sleep
+sort
+split
+stat
+stdbuf
+stty
+sum
+sync
+tac
+tail
+tee
+test
+timeout
+touch
+tr
+true
+truncate
+tsort
+tty
+uname
+unexpand
+uniq
+unlink
+users
+vdir
+wc
+who
+whoami
+yes
+acpid addgroup adduser adjtimex ar arp arping ash awk beep blkid brctl bunzip2
+bzcat bzip2 cal catv chat chattr chpasswd chpst chrt chvt clear cmp cpio crond
+crontab cryptpw dc deallocvt delgroup deluser depmod devmem dhcprelay diff dmesg
+dnsd dnsdomainname dos2unix dpkg dumpkmap dumpleases ed egrep eject envdir
+envuidgid fakeidentd fbset fbsplash fdflush fdformat fdisk fgrep find findfs
+flash_lock flash_unlock free freeramdisk fsck fsck.minix fsync ftpd ftpget
+ftpput fuser getopt getty grep groupadd groupmod gunzip gzip hd hdparm hexdump
+httpd hush hwclock ifconfig ifdown ifenslave ifplugd ifup inetd init inotifyd
+insmod install ionice ip ipaddr ipcalc ipcrm ipcs iplink iproute iprule iptunnel
+kbd_mode kill killall killall5 klogd last length less linux32 linux64 linuxrc
+loadfont loadkmap logger login logread losetup lpd lpq lpr lsattr lsmod lzmacat
+lzop lzopcat makemime man mdev mesg microcom mkdosfs mkfs.minix mkfs.vfat
+mkfs.ext2 mkfs.ext3 mkfs.ext4 mkpasswd mkswap mktemp modprobe more mount
+mountpoint mt nameif nc netstat nice nmeter nslookup od openvt passwd patch
+pgrep pidof ping ping6 pipe_progress pivot_root pkill popmaildir ps pscan
+raidautorun rdate rdev readprofile reformime renice reset resize rmmod route rpm
+rpm2cpio rtcwake run-parts runleven runsv runsvdir rx script scriptreplay sed
+sendmail setarch setconsole setfont setkeycodes setlogcons setsid setuidgid sh
+showkey slattach softlimit start-stop-daemon strings su sulogin sv svlogd
+swapoff swapon switch_root sysctl syslogd tar taskset tcpsvd telnet telnetd tftp
+tftpd time top traceroute ttysize udhcpc udhcpd udpsvd umount uncompress
+unix2dos unlzma unlzop unzip uptime useradd usermod usleep uudecode uuencode
+vconfig vi vlock volname watch watchdog wget which xargs zcat zcip
+asnacmd asnoqapp db2addicons db2cklog db2cos_trap db2expln db2gpmap db2imnod
+db2lspwd db2rcmd db2tapemgr ddcstrc rah asnadmt asnoqcap db2adutl db2ckrst
+db2dasstm db2fedgentf db2greg db2imsslcfg db2lueff db2recri db2tbst
+disable_MQFunctions rahemacs.el asnadmtora asnoqccmd db2advis db2ckupgrade
+db2dclgn db2flsn db2haicu db2inspf db2move db2tdbmgr djxlink rahemruninshell.el
+asnanalyze asnpwd db2_all db2ckupgrade32_exe db2demigdbd db2fm db2hareg
+db2instance db2mqCheck db2relocatedb db2top djxlinkInformix rahhost asnapply
+asnqacmd db2_aram db2ckupgrade64_exe db2desktop db2fmcd db2help db2javit
+db2mqlsn db2rmicons db2ts dynexpln rahwaitfor asncap asnqanalyze db2batch db2cli
+db2diag db2fmcu db2iauto db2jcc db2mtrk db2rrest db2uext2.pe enable_MQFunctions
+rahwrite asnccmd asnqapp db2bfd db2cluster db2disable_soap_udf db2fmd db2icdocs
+db2jdbcbind db2ncstk db2rspgn db2uext2.v2 gseidx asnclp asnqcap db2bp db2cmnclp
+db2djxmsg db2fodc db2IdentifyType1 db2jdkp db2nkill db2sampl db2untag hostlookup
+ASNDONE asnqccmd db2bpq db2cos db2drdat db2fopt db2IdentifyType1_exe db2_kill
+db2nps db2scont db2updserv ipclean sdscvr ASNLOAD asnqmfmt db2_call_stack
+db2cos_clp db2dsdcfgfill db2fs db2IdentifyType1_v8_32 db2langdir db2palog db2se
+db2updv10 ipquery sqlj asnmail asntdiff db2cat db2cos_datacorruption db2egcf
+db2ftok db2IdentifyType1_v8_64 db2latchtrace db2PArcmd db2setres db2usrinf
+ktdscvr tbscont asnmcmd asntrc db2cfexp db2cos_hang db2empfa db2fupdt
+db2IdentifyType1_v9_32 db2ldcfg db2pdraw db2sqljbind db2val latchtrace whichdist
+asnmig4c asntrcbp db2cfimp db2cos_lib db2enable_soap_udf db2gcf
+db2IdentifyType1_v9_64 db2lddrg db2profc db2sqljcustomize db2vend MQLInstall.sql
+asnmig8 asntrep db2checkSD db2cos_member db2evmon db2gdeps db2ilist db2level
+db2profp db2sqljprint db2wrapperconfig pctt asnmigpw clpplus db2checkSD_exe
+db2cos_perf db2evtbl db2genseed db2imaudcfg db2_local_ps db2_ps db2support
+db2xdbmig profconv asnmon db2 db2chglibpath db2cos_preupgrade db2exfmt
+db2_glm_detach db2imdbd db2logsForRfwd db2rbind db2support_internal db2xdbsg
+profdb asnoqacmd db2acsutil db2ckbkp db2cos_threshold db2exmig db2gpinf db2imdbm
+db2look db2rc db2symlookup ddcspkgn profp
+cielock db2cacpy db2chparm db2dasstml db2fmp32 db2fmpr32 db2genp db2govd
+db2havend db2inidb db2licm db2path db2pdcfg db2rappl db2remot db2rstar db2set
+db2start db2stop2 db2sysc db2trc db2audit db2cap db2dart db2fmp db2fmpr
+db2fmpterm db2gov db2govlg db2iclean db2licd db2linkspeed db2pd db2rapp db2rem
+db2rfpen db2rstop db2star2 db2stop db2stst db2syscr
