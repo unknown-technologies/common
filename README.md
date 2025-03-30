@@ -31,6 +31,7 @@ Features
 - TAR archive parser
 - minimal RRD-like timeseries database
 - Pure Java based POSIX/Linux compatible API emulation including VFS
+- ELF file parser
 - Power8 emulator
 - Swing MOTIF L&F since it was removed from upstream JDK
 
