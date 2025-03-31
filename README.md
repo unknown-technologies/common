@@ -29,6 +29,7 @@ Features
 - JSON parser + serializer
 - XPM image parser
 - TAR archive parser
+- TELNET implementation including TN3270
 - minimal RRD-like timeseries database
 - ELF file parser
 - Pure Java based POSIX/Linux compatible API emulation including VFS
