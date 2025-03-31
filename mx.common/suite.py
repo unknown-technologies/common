@@ -43,6 +43,17 @@ suite = {
       "license" : "GPLv3",
     },
 
+    "com.unknown.net" : {
+      "subDir" : "projects",
+      "sourceDirs" : ["src"],
+      "dependencies" : [
+        "com.unknown.util"
+      ],
+      "javaCompliance" : "21+",
+      "workingSets" : "common",
+      "license" : "GPLv3",
+    },
+
     "com.unknown.xml" : {
       "subDir" : "projects",
       "sourceDirs" : ["src"],
@@ -168,6 +179,18 @@ suite = {
       "license" : "GPLv3",
     },
 
+    "com.unknown.net.test" : {
+      "subDir" : "projects",
+      "sourceDirs" : ["src"],
+      "dependencies" : [
+        "com.unknown.net",
+        "mx:JUNIT",
+      ],
+      "javaCompliance" : "21+",
+      "workingSets" : "common",
+      "license" : "GPLv3",
+    },
+
     "com.unknown.xml.test" : {
       "subDir" : "projects",
       "sourceDirs" : ["src"],
@@ -265,6 +288,18 @@ suite = {
       ]
     },
 
+    "NET" : {
+      "path" : "build/net.jar",
+      "subDir" : "common",
+      "sourcesPath" : "build/net.src.zip",
+      "dependencies" : [
+        "com.unknown.net"
+      ],
+      "distDependencies" : [
+        "CORE"
+      ]
+    },
+
     "AUDIO" : {
       "path" : "build/audio.jar",
       "subDir" : "common",
@@ -358,6 +393,7 @@ suite = {
         "com.unknown.util.test",
         "com.unknown.db.test",
         "com.unknown.math.test",
+        "com.unknown.net.test",
         "com.unknown.xml.test",
         "com.unknown.syntax.test",
         "com.unknown.audio.test"
