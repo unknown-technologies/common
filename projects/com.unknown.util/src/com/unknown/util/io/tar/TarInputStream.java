@@ -1,10 +1,10 @@
 package com.unknown.util.io.tar;
 
-import java.io.FileInputStream;
+import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 
-public class TarInputStream implements AutoCloseable {
+public class TarInputStream implements Closeable {
 	private InputStream in;
 
 	public TarInputStream(InputStream in) {
@@ -27,22 +27,5 @@ public class TarInputStream implements AutoCloseable {
 	@Override
 	public void close() throws IOException {
 		in.close();
-	}
-
-	public static void main(String[] args) throws Throwable {
-		if(args.length != 1) {
-			System.out.println("usage: TarInputStream archive.tar");
-			return;
-		}
-		try(InputStream in = new FileInputStream(args[0])) {
-			TarInputStream tar = new TarInputStream(in);
-			TarEntry entry;
-			while((entry = tar.next()) != null) {
-				System.out.println(entry);
-				// System.out.println("===============");
-				// System.out.println(new String(entry.getData()));
-				// System.out.println("===============");
-			}
-		}
 	}
 }

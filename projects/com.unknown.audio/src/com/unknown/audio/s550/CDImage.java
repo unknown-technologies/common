@@ -7,9 +7,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-import com.unknown.audio.meta.riff.DataChunk;
-import com.unknown.audio.meta.riff.RiffWave;
-import com.unknown.audio.meta.riff.WaveFormatChunk;
 import com.unknown.util.io.BEInputStream;
 import com.unknown.util.io.BEOutputStream;
 import com.unknown.util.io.RandomAccessMemoryInputStream;
@@ -155,36 +152,11 @@ public class CDImage {
 		}
 	}
 
-	private static void extract(String iso, String folder, String prefix) throws IOException {
+	public static void extract(String iso, String folder, String prefix) throws IOException {
 		byte[] disc = Files.readAllBytes(Paths.get(iso));
 		CDImage cd = new CDImage(disc);
 		CDSoundDirectory dir = cd.getSoundDirectory();
 		System.out.printf("%d entries in SoundDirectory\n", dir.getCount());
 		cd.extractAll(Paths.get(folder), prefix);
-	}
-
-	public static void write(short[] data, int sampleRate, String path) throws IOException {
-		RiffWave out = new RiffWave();
-		out.set(new WaveFormatChunk());
-		out.set(new DataChunk());
-		out.setSampleRate(sampleRate);
-		out.setSampleFormat(WaveFormatChunk.WAVE_FORMAT_PCM);
-		out.setChannels(1);
-		out.setBitsPerSample(16);
-		out.set16bitSamples(data);
-		try(BufferedOutputStream wav = new BufferedOutputStream(new FileOutputStream(path))) {
-			out.write(wav);
-		}
-	}
-
-	public static void main(String[] args) throws Exception {
-		extract("Y:\\Sample CDs\\Roland Sxx\\S-550\\Universe of Sounds - Vol. 1 [Roland S-5xx].iso",
-				"Y:\\Sample CDs\\Roland Sxx\\S-550\\extracted", "UOS1");
-		extract("Y:\\Sample CDs\\Roland Sxx\\S-550\\Universe of Sounds Vol 2 [s500].iso",
-				"Y:\\Sample CDs\\Roland Sxx\\S-550\\extracted", "UOS2");
-		extract("Y:\\Sample CDs\\Roland Sxx\\S-550\\Club50 Master Performance Vol. 1.iso",
-				"Y:\\Sample CDs\\Roland Sxx\\S-550\\extracted", "C50MPV1");
-		extract("Y:\\Sample CDs\\Roland Sxx\\S-550\\L-CD1 S-50 Factory Library.iso",
-				"Y:\\Sample CDs\\Roland Sxx\\S-550\\extracted", "LCD1");
 	}
 }

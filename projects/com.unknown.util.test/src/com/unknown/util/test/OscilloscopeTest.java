@@ -30,7 +30,6 @@ public class OscilloscopeTest {
 		for(int i = 0; i < signal.length; i++) {
 			double t = i / fs;
 			double phi = t * f * 2 * Math.PI;
-			// signal[i] = (float) Math.signum(Math.sin(phi));
 			signal[i] = (float) Math.sin(phi);
 		}
 		osc.setSignal(signal);
