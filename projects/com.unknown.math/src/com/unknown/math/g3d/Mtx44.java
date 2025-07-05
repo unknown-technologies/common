@@ -374,7 +374,7 @@ public class Mtx44 {
 	}
 
 	public static Mtx44 rotDegZ(double deg) {
-		return rotRadZ(deg / 360.0 * Math.PI);
+		return rotRadZ(deg / 180.0 * Math.PI);
 	}
 
 	public static Mtx44 perspective(double fovY, double aspect, double n, double f) {
