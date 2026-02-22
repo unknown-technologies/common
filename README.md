@@ -30,6 +30,8 @@ Features
 - XPM image parser
 - TAR archive parser
 - TELNET implementation including TN3270
+- Art-Net implementation to control DMX lights
+- ShowNET implementation to use ILDA streaming with Laserworld show lasers
 - minimal RRD-like timeseries database
 - ELF file parser
 - Pure Java based POSIX/Linux compatible API emulation including VFS
