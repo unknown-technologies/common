@@ -34,87 +34,99 @@ public class ShowNET implements AutoCloseable {
 
 	private final Set<InetAddress> additionalDiscoveryAddresses = new HashSet<>();
 
-	private Thread discoveryThread;
-	private Thread receiveThread;
+	private final Thread discoveryThread;
+	private final Thread receiveThread;
 
 	public ShowNET() throws IOException {
-		byte[] broadcastAddress = { -1, -1, -1, -1 };
-		InetAddress broadcast = InetAddress.getByAddress(broadcastAddress);
+		this(true);
+	}
 
-		discoverySocket = new DatagramSocket(41856);
-		discoverySocket.setBroadcast(true);
-		discoverySocket.setSoTimeout(DISCOVERY_TIMEOUT);
+	public ShowNET(boolean discover) throws IOException {
+		if(discover) {
+			byte[] broadcastAddress = { -1, -1, -1, -1 };
+			InetAddress broadcast = InetAddress.getByAddress(broadcastAddress);
 
-		discoveryThread = new Thread() {
-			@Override
-			public void run() {
-				byte[] data = new byte[1600];
-				// send initial discovery
-				DatagramPacket discovery = new DatagramPacket(DISCOVERY, DISCOVERY.length, broadcast,
-						Laser.PORT);
+			discoverySocket = new DatagramSocket(41856);
+			discoverySocket.setBroadcast(true);
+			discoverySocket.setSoTimeout(DISCOVERY_TIMEOUT);
 
-				try {
-					discoverySocket.send(discovery);
-				} catch(IOException e) {
-					log.log(Levels.ERROR, "Failed to send discovery packet: " + e.getMessage(), e);
-					return;
-				}
+			discoveryThread = new Thread() {
+				@Override
+				public void run() {
+					byte[] data = new byte[1600];
+					// send initial discovery
+					DatagramPacket discovery = new DatagramPacket(DISCOVERY, DISCOVERY.length,
+							broadcast, Laser.PORT);
 
-				while(!discoverySocket.isClosed()) {
-					// clean up list
-					long now = System.currentTimeMillis();
-					long limit = now - DISCOVERY_TIMEOUT * 2;
-					for(Entry<InetAddress, LaserInfo> entry : discoveredLasers.entrySet()) {
-						if(entry.getValue().getDiscoveryTimestamp() < limit) {
-							discoveredLasers.remove(entry.getKey());
-						}
+					try {
+						discoverySocket.send(discovery);
+					} catch(IOException e) {
+						log.log(Levels.ERROR, "Failed to send discovery packet: " +
+								e.getMessage(), e);
+						return;
 					}
 
-					// receive new laser info ...
-					DatagramPacket packet = new DatagramPacket(data, data.length);
-					try {
-						discoverySocket.receive(packet);
-						LaserInfo info = new LaserInfo(packet.getAddress(), data);
-						discoveredLasers.put(packet.getAddress(), info);
-						log.info("Laser discovered: " + info);
-					} catch(SocketTimeoutException e) {
-						// clean up laser response queue
-						packetCleanup();
-
-						// send a new discovery packet
-						try {
-							discoverySocket.send(discovery);
-						} catch(IOException ex) {
-							log.log(Levels.ERROR, "Failed to send discovery packet: " +
-									ex.getMessage(), ex);
-							return;
-						}
-
-						synchronized(additionalDiscoveryAddresses) {
-							for(InetAddress addr : additionalDiscoveryAddresses) {
-								DatagramPacket discoveryPacket = new DatagramPacket(
-										DISCOVERY, DISCOVERY.length, addr,
-										Laser.PORT);
-								try {
-									discoverySocket.send(discoveryPacket);
-								} catch(IOException ex) {
-									log.log(Levels.ERROR,
-											"Failed to send discovery packet: " +
-													ex.getMessage(),
-											ex);
-									return;
-								}
+					while(!discoverySocket.isClosed()) {
+						// clean up list
+						long now = System.currentTimeMillis();
+						long limit = now - DISCOVERY_TIMEOUT * 2;
+						for(Entry<InetAddress, LaserInfo> entry : discoveredLasers.entrySet()) {
+							if(entry.getValue().getDiscoveryTimestamp() < limit) {
+								discoveredLasers.remove(entry.getKey());
 							}
 						}
-					} catch(IOException e) {
-						log.log(Levels.ERROR, "Failed to receive discovery packet: " +
-								e.getMessage(), e);
+
+						// receive new laser info ...
+						DatagramPacket packet = new DatagramPacket(data, data.length);
+						try {
+							discoverySocket.receive(packet);
+							LaserInfo info = new LaserInfo(packet.getAddress(), data);
+							discoveredLasers.put(packet.getAddress(), info);
+							log.info("Laser discovered: " + info);
+						} catch(SocketTimeoutException e) {
+							// clean up laser response queue
+							packetCleanup();
+
+							// send a new discovery packet
+							try {
+								discoverySocket.send(discovery);
+							} catch(IOException ex) {
+								log.log(Levels.ERROR,
+										"Failed to send discovery packet: " +
+												ex.getMessage(),
+										ex);
+								return;
+							}
+
+							synchronized(additionalDiscoveryAddresses) {
+								for(InetAddress addr : additionalDiscoveryAddresses) {
+									DatagramPacket discoveryPacket = new DatagramPacket(
+											DISCOVERY, DISCOVERY.length,
+											addr, Laser.PORT);
+									try {
+										discoverySocket.send(discoveryPacket);
+									} catch(IOException ex) {
+										log.log(Levels.ERROR,
+												"Failed to send discovery packet: " +
+														ex.getMessage(),
+												ex);
+										return;
+									}
+								}
+							}
+						} catch(IOException e) {
+							log.log(Levels.ERROR, "Failed to receive discovery packet: " +
+									e.getMessage(), e);
+						}
 					}
 				}
-			}
-		};
-		discoveryThread.setDaemon(true);
-		discoveryThread.start();
+			};
+			discoveryThread.setDaemon(true);
+			discoveryThread.start();
+		} else {
+			discoverySocket = null;
+			discoveryThread = null;
+		}
 
 		socket = new DatagramSocket();
 		socket.setSoTimeout(LASER_TIMEOUT);
@@ -171,6 +183,10 @@ public class ShowNET implements AutoCloseable {
 	}
 
 	public void addDiscoveryAddress(InetAddress addr) {
+		if(discoverySocket == null) {
+			throw new IllegalStateException("Cannot use discovery when it is disabled");
+		}
+
 		synchronized(additionalDiscoveryAddresses) {
 			additionalDiscoveryAddresses.add(addr);
 		}
