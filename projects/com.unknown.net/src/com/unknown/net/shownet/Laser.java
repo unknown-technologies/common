@@ -317,13 +317,13 @@ public class Laser {
 		}
 	}
 
-	public byte[] receiveBlock(int address, int length) throws IOException, TimeoutException {
+	public byte[] readMemory(int address, int length) throws IOException, TimeoutException {
 		byte[] out = new byte[length];
-		receiveBlock(address, length, out, 0, 2);
+		readMemory(address, length, out, 0, 2);
 		return out;
 	}
 
-	public void receiveBlock(int address, int length, byte[] out, int offset, int timeout)
+	public void readMemory(int address, int length, byte[] out, int offset, int timeout)
 			throws IOException, TimeoutException {
 		byte[] buf = new byte[28];
 
@@ -390,8 +390,8 @@ public class Laser {
 	}
 
 	public void configure() throws IOException {
-		byte[] configA = receiveBlock(0x8020000, 2048);
-		byte[] configB = receiveBlock(0x807F800, 2048);
+		byte[] configA = readMemory(0x8020000, 2048);
+		byte[] configB = readMemory(0x807F800, 2048);
 
 		if(Arrays.equals(configA, configB)) {
 			configAddress = 0x8020000;
