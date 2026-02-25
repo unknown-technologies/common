@@ -5,7 +5,10 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketTimeoutException;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -36,6 +39,8 @@ public class ShowNET implements AutoCloseable {
 
 	private final Thread discoveryThread;
 	private final Thread receiveThread;
+
+	private final List<LaserDiscoveryListener> discoveryListeners = new ArrayList<>();
 
 	public ShowNET() throws IOException {
 		this(true);
@@ -69,10 +74,11 @@ public class ShowNET implements AutoCloseable {
 					while(!discoverySocket.isClosed()) {
 						// clean up list
 						long now = System.currentTimeMillis();
-						long limit = now - DISCOVERY_TIMEOUT * 2;
+						long limit = now - DISCOVERY_TIMEOUT * 3;
 						for(Entry<InetAddress, LaserInfo> entry : discoveredLasers.entrySet()) {
 							if(entry.getValue().getDiscoveryTimestamp() < limit) {
 								discoveredLasers.remove(entry.getKey());
+								fireLaserLost(entry.getValue());
 							}
 						}
 
@@ -82,7 +88,7 @@ public class ShowNET implements AutoCloseable {
 							discoverySocket.receive(packet);
 							LaserInfo info = new LaserInfo(packet.getAddress(), data);
 							discoveredLasers.put(packet.getAddress(), info);
-							log.info("Laser discovered: " + info);
+							fireLaserDiscovered(info);
 						} catch(SocketTimeoutException e) {
 							// clean up laser response queue
 							packetCleanup();
@@ -199,11 +205,99 @@ public class ShowNET implements AutoCloseable {
 		}
 	}
 
+	public void removeDiscoveryAddress(InetAddress addr) {
+		synchronized(additionalDiscoveryAddresses) {
+			additionalDiscoveryAddresses.remove(addr);
+		}
+	}
+
+	public Set<InetAddress> getDiscoveryAddresses() {
+		synchronized(additionalDiscoveryAddresses) {
+			return Collections.unmodifiableSet(new HashSet<>(additionalDiscoveryAddresses));
+		}
+	}
+
+	public Set<LaserInfo> getDiscoveredLasers() {
+		return Collections.unmodifiableSet(new HashSet<>(discoveredLasers.values()));
+	}
+
+	protected void fireLaserDiscovered(LaserInfo info) {
+		synchronized(discoveryListeners) {
+			for(LaserDiscoveryListener listener : discoveryListeners) {
+				try {
+					listener.laserDiscovered(info);
+				} catch(Throwable t) {
+					log.log(Levels.WARNING, "Laser discovery listener failed: " + t.getMessage(),
+							t);
+				}
+			}
+		}
+	}
+
+	protected void fireLaserLost(LaserInfo info) {
+		synchronized(discoveryListeners) {
+			for(LaserDiscoveryListener listener : discoveryListeners) {
+				try {
+					listener.laserLost(info);
+				} catch(Throwable t) {
+					log.log(Levels.WARNING, "Laser discovery listener failed: " + t.getMessage(),
+							t);
+				}
+			}
+		}
+	}
+
+	public void addLaserDiscoveryListener(LaserDiscoveryListener listener) {
+		synchronized(discoveryListeners) {
+			discoveryListeners.add(listener);
+		}
+	}
+
+	public void removeLaserDiscoveryListener(LaserDiscoveryListener listener) {
+		synchronized(discoveryListeners) {
+			discoveryListeners.add(listener);
+		}
+	}
+
 	public Laser connect(InetAddress addr) throws IOException {
-		Laser laser = new Laser(this, addr);
-		lasers.put(addr, laser);
-		laser.init();
+		Laser laser = lasers.get(addr);
+		if(laser == null) {
+			laser = new Laser(this, addr);
+			lasers.put(addr, laser);
+			laser.init();
+			laser.configure();
+		}
 		return laser;
+	}
+
+	public void disconnect(Laser laser) {
+		lasers.remove(laser.getAddress());
+	}
+
+	public Set<Laser> getConnectedLasers() {
+		return Collections.unmodifiableSet(new HashSet<>(lasers.values()));
+	}
+
+	public Laser getLaser(InetAddress addr) {
+		return lasers.get(addr);
+	}
+
+	public InetAddress getLaserAddress(InterfaceId interfaceId) {
+		for(Laser laser : lasers.values()) {
+			InterfaceId id = laser.getInterfaceId();
+			if(id != null && id.equals(interfaceId)) {
+				return laser.getAddress();
+			}
+		}
+
+		for(LaserInfo laser : discoveredLasers.values()) {
+			InterfaceId id = laser.getInterfaceId();
+			if(id != null && id.equals(interfaceId)) {
+				return laser.getAddress();
+			}
+		}
+
+		return null;
 	}
 
 	void send(DatagramPacket packet) throws IOException {

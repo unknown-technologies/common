@@ -13,7 +13,7 @@ public class LaserInfo {
 	private final int bootloader;
 	private final int firmware;
 	private final int hardwareId;
-	private final int[] interfaceId;
+	private final InterfaceId interfaceId;
 	private final short[] license;
 	private final byte[] unknown;
 
@@ -24,10 +24,11 @@ public class LaserInfo {
 
 		bootloader = Endianess.get32bitLE(packet, 32) ^ 0xD49A3433;
 		firmware = Endianess.get32bitLE(packet, 36) ^ 0xD49A3433;
-		interfaceId = new int[3];
-		for(int i = 0; i < interfaceId.length; i++) {
-			interfaceId[i] = Endianess.get32bitLE(packet, 40 + i * 4) ^ 0xD49A3433;
+		int[] id = new int[3];
+		for(int i = 0; i < id.length; i++) {
+			id[i] = Endianess.get32bitLE(packet, 40 + i * 4) ^ 0xD49A3433;
 		}
+		interfaceId = new InterfaceId(id);
 		hardwareId = Endianess.get32bitLE(packet, 52);
 		license = new short[8];
 		for(int i = 0; i < license.length; i++) {
@@ -39,6 +40,10 @@ public class LaserInfo {
 		}
 	}
 
+	public InetAddress getAddress() {
+		return address;
+	}
+
 	public int geteBootloader() {
 		return bootloader;
 	}
@@ -47,12 +52,12 @@ public class LaserInfo {
 		return firmware;
 	}
 
-	public int getHardwareID() {
+	public int getHardwareId() {
 		return hardwareId;
 	}
 
-	public int[] getInterfaceID() {
-		return Arrays.copyOf(interfaceId, interfaceId.length);
+	public InterfaceId getInterfaceId() {
+		return interfaceId;
 	}
 
 	public short[] getLicense() {
@@ -65,28 +70,6 @@ public class LaserInfo {
 
 	public String getFirmwareString() {
 		return Integer.toUnsignedString(firmware);
-	}
-
-	public String getInterfaceIDString() {
-		return String.format("%08X:%08X:%08X", interfaceId[0] ^ 0xD49A3433, interfaceId[1] ^ 0xD49A3433,
-				interfaceId[2] ^ 0xD49A3433);
-	}
-
-	public String getDecodedInterfaceIDString() {
-		byte[] bytes = new byte[4];
-		char[] chars = new char[8];
-		for(int i = 0; i < 2; i++) {
-			Endianess.set32bitLE(bytes, 0, interfaceId[i + 1]);
-			for(int j = 0; j < 4; j++) {
-				int b = Byte.toUnsignedInt(bytes[j]);
-				if(b < 0x20 || b >= 0x7F) {
-					b = '.';
-				}
-				chars[i * 4 + j] = (char) b;
-			}
-		}
-		return String.format("%08X:%02X:%s", interfaceId[0], interfaceId[1] & 0xFF,
-				new String(chars, 1, chars.length - 1));
 	}
 
 	public String getLicenseString() {
@@ -141,8 +124,8 @@ public class LaserInfo {
 	@Override
 	public String toString() {
 		return "Laser[addr=" + address.getHostAddress() + ",bootloader=" + getBootloaderString() +
-				",firmware=" + getFirmwareString() + ",hwid=" + getHardwareID() + ",interface=" +
-				getInterfaceIDString() + "(" + getDecodedInterfaceIDString() + "),licenses=[" +
+				",firmware=" + getFirmwareString() + ",hwid=" + getHardwareId() + ",interface=" +
+				interfaceId.toString() + "(" + interfaceId.getDecoded() + "),licenses=[" +
 				getLicenseString() + "]]";
 	}
 }

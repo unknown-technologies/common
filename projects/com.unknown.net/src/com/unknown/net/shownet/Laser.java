@@ -43,7 +43,7 @@ public class Laser {
 	private final ShowNET shownet;
 	private final InetAddress networkAddress;
 
-	private final int[] interfaceId = new int[3];
+	private InterfaceId interfaceId;
 	private final int[] cryptKey = new int[4];
 	private final byte[] mac = new byte[6];
 	private int timeInterval;
@@ -93,8 +93,36 @@ public class Laser {
 		return colorFeatures;
 	}
 
+	public int getColorCount() {
+		return colorCount;
+	}
+
 	public int getFramePointSize() {
 		return framePointSize;
+	}
+
+	public int getConfigAddress() {
+		return configAddress;
+	}
+
+	public InterfaceId getInterfaceId() {
+		return interfaceId;
+	}
+
+	public byte[] getMACAddress() {
+		return Arrays.copyOf(mac, mac.length);
+	}
+
+	public byte[] getConfigMemory() {
+		return Arrays.copyOf(config, config.length);
+	}
+
+	public InetAddress getAddress() {
+		return networkAddress;
+	}
+
+	public int getBitPerChannel() {
+		return generation == 2 ? 8 : 7;
 	}
 
 	public void cleanupPackets() {
@@ -264,12 +292,16 @@ public class Laser {
 			}
 
 			generation = 1;
-			for(int i = 0; i < interfaceId.length; i++) {
-				interfaceId[i] = Endianess.get32bitLE(rx, offset + 24 + i * 4);
+
+			int[] id = new int[3];
+			for(int i = 0; i < id.length; i++) {
+				id[i] = Endianess.get32bitLE(rx, offset + 24 + i * 4);
 			}
+			interfaceId = new InterfaceId(id);
+
 			memoryAddress = Endianess.get32bitLE(rx, offset + 36);
 
-			cryptKey[1] = interfaceId[2];
+			cryptKey[1] = id[2];
 			cryptKey[3] = Endianess.get16bitLE(rx, offset + 44);
 
 			revision = Endianess.get32bitLE(rx, offset + 8);
@@ -389,7 +421,7 @@ public class Laser {
 		}
 	}
 
-	public void configure() throws IOException {
+	public void configure() throws IOException, TimeoutException {
 		byte[] configA = readMemory(0x8020000, 2048);
 		byte[] configB = readMemory(0x807F800, 2048);
 
@@ -485,23 +517,6 @@ public class Laser {
 				FLAG_IGNORE_RSP);
 	}
 
-	public String getDecodedIDString() {
-		byte[] bytes = new byte[4];
-		char[] chars = new char[8];
-		for(int i = 0; i < 2; i++) {
-			Endianess.set32bitLE(bytes, 0, interfaceId[i + 1]);
-			for(int j = 0; j < 4; j++) {
-				int b = Byte.toUnsignedInt(bytes[j]);
-				if(b < 0x20 || b >= 0x7F) {
-					b = '.';
-				}
-				chars[i * 4 + j] = (char) b;
-			}
-		}
-		return String.format("%08X:%02X:%s", interfaceId[0], interfaceId[1] & 0xFF,
-				new String(chars, 1, chars.length - 1));
-	}
-
 	public String getMACAddressString() {
 		return String.format("%02X:%02X:%02X:%02X:%02X:%02X", Byte.toUnsignedInt(mac[0]),
 				Byte.toUnsignedInt(mac[1]), Byte.toUnsignedInt(mac[2]), Byte.toUnsignedInt(mac[3]),
@@ -509,16 +524,16 @@ public class Laser {
 	}
 
 	public String getInfo() {
-
 		StringBuilder buf = new StringBuilder();
 		buf.append(String.format("REV:   %d\n", revision));
 		buf.append(String.format("FW:    %d\n", firmware));
 		buf.append(String.format("GEN:   %d\n", generation));
 		buf.append(String.format("COLOR: %d (%d CHANNELS)\n", colorFeatures, colorCount));
 		buf.append(String.format("TIME:  %d\n", timeInterval));
-		buf.append(String.format("ID     %08X:%08X:%08X (%08X:%08X:%08X, %s)\n", interfaceId[0] ^ 0xD49A3433,
-				interfaceId[1] ^ 0xD49A3433, interfaceId[2] ^ 0xD49A3433, interfaceId[0],
-				interfaceId[1], interfaceId[2], getDecodedIDString()));
+		buf.append(String.format("ID     %08X:%08X:%08X (%08X:%08X:%08X, %s)\n",
+				interfaceId.get(0) ^ 0xD49A3433, interfaceId.get(1) ^ 0xD49A3433,
+				interfaceId.get(2) ^ 0xD49A3433, interfaceId.get(0), interfaceId.get(1),
+				interfaceId.get(2), interfaceId.getDecoded()));
 		buf.append(String.format("CRYPT: %08X %08X %08X %08X\n", cryptKey[0], cryptKey[1], cryptKey[2],
 				cryptKey[3]));
 		buf.append(String.format("ADDR:  %08X\n", memoryAddress));
@@ -526,5 +541,10 @@ public class Laser {
 		buf.append(String.format("MAC:   %s\n", getMACAddressString()));
 		buf.append(String.format("STATE: %d", status));
 		return buf.toString();
+	}
+
+	@Override
+	public String toString() {
+		return "Laser[" + networkAddress.getHostAddress() + ",interfaceId=" + interfaceId + "]";
 	}
 }
