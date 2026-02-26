@@ -18,6 +18,10 @@ public class Frame {
 	}
 
 	public Frame(Laser laser, List<Point> points, int time, boolean uncompressed) {
+		if(points.isEmpty()) {
+			throw new IllegalArgumentException("Empty frame!");
+		}
+
 		this.laser = laser;
 		this.time = time;
 		this.pointCount = points.size();
