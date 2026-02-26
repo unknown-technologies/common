@@ -14,6 +14,12 @@ public class InterfaceId {
 		System.arraycopy(id, 0, this.id, 0, id.length);
 	}
 
+	public InterfaceId(int id0, int id1, int id2) {
+		id[0] = id0;
+		id[1] = id1;
+		id[2] = id2;
+	}
+
 	public int[] getInterfaceId() {
 		return Arrays.copyOf(id, id.length);
 	}
