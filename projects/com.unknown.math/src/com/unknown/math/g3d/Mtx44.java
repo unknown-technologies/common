@@ -301,6 +301,10 @@ public class Mtx44 {
 		return m;
 	}
 
+	public static Mtx44 trans(Vec3 trans) {
+		return trans(trans.x, trans.y, trans.z);
+	}
+
 	public static Mtx44 scale(double x, double y, double z) {
 		Mtx44 m = new Mtx44();
 
@@ -312,6 +316,10 @@ public class Mtx44 {
 		// @formatter:on
 
 		return m;
+	}
+
+	public static Mtx44 scale(Vec3 scale) {
+		return scale(scale.x, scale.y, scale.z);
 	}
 
 	public static Mtx44 rotTrigX(double sinA, double cosA) {
