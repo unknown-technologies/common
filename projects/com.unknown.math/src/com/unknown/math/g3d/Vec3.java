@@ -13,6 +13,18 @@ public class Vec3 {
 		this.z = z;
 	}
 
+	public double getX() {
+		return x;
+	}
+
+	public double getY() {
+		return y;
+	}
+
+	public double getZ() {
+		return z;
+	}
+
 	@Override
 	public String toString() {
 		return "(" + x + "|" + y + "|" + z + ")";
