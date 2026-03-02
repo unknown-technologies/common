@@ -260,18 +260,31 @@ public class ShowNET implements AutoCloseable {
 	}
 
 	public Laser connect(InetAddress addr) throws IOException {
-		Laser laser = lasers.get(addr);
-		if(laser == null) {
-			laser = new Laser(this, addr);
-			lasers.put(addr, laser);
-			laser.init();
-			laser.configure();
+		Laser laser;
+
+		// use synchronized here so we can never create the same laser concurrently
+		synchronized(lasers) {
+			laser = lasers.get(addr);
+			if(laser == null) {
+				laser = new Laser(this, addr);
+				lasers.put(addr, laser);
+			}
 		}
+
+		laser.init();
+		laser.configure();
+
+		// send an empty frame initially to avoid random output
+		laser.sendFrame(List.of(new Point()), 1000);
+
 		return laser;
 	}
 
 	public void disconnect(Laser laser) {
-		lasers.remove(laser.getAddress());
+		// synchronize with the connect method here
+		synchronized(lasers) {
+			lasers.remove(laser.getAddress());
+		}
 	}
 
 	public Set<Laser> getConnectedLasers() {
