@@ -7,23 +7,23 @@ import java.util.List;
 public class Frame {
 	private final Laser laser;
 
-	private final int time;
+	private final int speed;
 	private final int id;
 	private final int pointCount;
 	private boolean compressed;
 	private byte[] bitstream;
 
-	public Frame(Laser laser, List<Point> points, int time) {
-		this(laser, points, time, false);
+	public Frame(Laser laser, List<Point> points, int speed) {
+		this(laser, points, speed, false);
 	}
 
-	public Frame(Laser laser, List<Point> points, int time, boolean uncompressed) {
+	public Frame(Laser laser, List<Point> points, int speed, boolean uncompressed) {
 		if(points.isEmpty()) {
 			throw new IllegalArgumentException("Empty frame!");
 		}
 
 		this.laser = laser;
-		this.time = time;
+		this.speed = speed;
 		this.pointCount = points.size();
 		compressed = !uncompressed;
 
@@ -201,8 +201,8 @@ public class Frame {
 		return buf;
 	}
 
-	public int getTime() {
-		return time;
+	public int getSpeed() {
+		return speed;
 	}
 
 	public boolean isCompressed() {

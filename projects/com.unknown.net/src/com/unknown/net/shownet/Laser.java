@@ -478,12 +478,18 @@ public class Laser {
 		return frameId++;
 	}
 
-	public void sendFrame(List<Point> points, int time) throws IOException {
-		Frame frame = new Frame(this, points, time);
+	public void sendFrame(List<Point> points, int speed) throws IOException {
+		Frame frame = new Frame(this, points, speed);
 		sendFrame(frame);
 	}
 
 	public void sendFrame(Frame frame) throws IOException {
+		// without this, a frame speed of <428 with interval 28000000 causes an overflow
+		int frameTime = timeInterval / frame.getSpeed();
+		if(frameTime > 0xFFFF) {
+			frameTime = 0xFFFF;
+		}
+
 		byte[] bitstream = frame.getBitstream();
 
 		int fragmentCnt = 1;
@@ -509,7 +515,7 @@ public class Laser {
 		Endianess.set32bitLE(buf, 20, (fragmentCnt << 16) | ((fragmentSeq & 0x1F) << 11) | (id & 0x7FF));
 		Endianess.set32bitLE(buf, 24, (fragmentSize << 20) | (fragmentOffset & 0xFFFF));
 		Endianess.set32bitLE(buf, 36, (frame.getId() << 8) | (frame.isCompressed() ? 0x10 : 0));
-		Endianess.set16bitLE(buf, 40, (short) (timeInterval / frame.getTime()));
+		Endianess.set16bitLE(buf, 40, (short) frameTime);
 		Endianess.set16bitLE(buf, 42, (short) frame.getPointCount());
 		System.arraycopy(bitstream, 0, buf, 44, bitstream.length);
 
