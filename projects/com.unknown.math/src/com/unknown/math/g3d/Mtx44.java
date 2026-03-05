@@ -41,6 +41,8 @@ public class Mtx44 implements Serializable {
 				return _02;
 			case 3:
 				return _03;
+			default:
+				throw new IndexOutOfBoundsException(col);
 			}
 		case 1:
 			switch(col) {
@@ -52,6 +54,8 @@ public class Mtx44 implements Serializable {
 				return _12;
 			case 3:
 				return _13;
+			default:
+				throw new IndexOutOfBoundsException(col);
 			}
 		case 2:
 			switch(col) {
@@ -63,6 +67,8 @@ public class Mtx44 implements Serializable {
 				return _22;
 			case 3:
 				return _23;
+			default:
+				throw new IndexOutOfBoundsException(col);
 			}
 		case 3:
 			switch(col) {
@@ -74,9 +80,12 @@ public class Mtx44 implements Serializable {
 				return _32;
 			case 3:
 				return _33;
+			default:
+				throw new IndexOutOfBoundsException(col);
 			}
+		default:
+			throw new IndexOutOfBoundsException(row);
 		}
-		return 0;
 	}
 
 	public void set(int row, int col, double value) {
@@ -95,6 +104,8 @@ public class Mtx44 implements Serializable {
 			case 3:
 				_03 = value;
 				break;
+			default:
+				throw new IndexOutOfBoundsException(col);
 			}
 			break;
 		case 1:
@@ -111,6 +122,8 @@ public class Mtx44 implements Serializable {
 			case 3:
 				_13 = value;
 				break;
+			default:
+				throw new IndexOutOfBoundsException(col);
 			}
 			break;
 		case 2:
@@ -127,6 +140,8 @@ public class Mtx44 implements Serializable {
 			case 3:
 				_23 = value;
 				break;
+			default:
+				throw new IndexOutOfBoundsException(col);
 			}
 			break;
 		case 3:
@@ -143,8 +158,12 @@ public class Mtx44 implements Serializable {
 			case 3:
 				_33 = value;
 				break;
+			default:
+				throw new IndexOutOfBoundsException(col);
 			}
 			break;
+		default:
+			throw new IndexOutOfBoundsException(row);
 		}
 	}
 
@@ -242,7 +261,6 @@ public class Mtx44 implements Serializable {
 					inv.set(swp, k, tmp);
 				}
 			}
-
 			// ---- pivoting end ----
 
 			w = 1.0 / gjm.get(i, i);
@@ -288,7 +306,6 @@ public class Mtx44 implements Serializable {
 
 		w = 1.0f / w;
 
-		// Copy back
 		return new Vec3(x * w, y * w, z * w);
 	}
 
