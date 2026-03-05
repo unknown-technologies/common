@@ -309,6 +309,20 @@ public class Mtx44 implements Serializable {
 		return new Vec3(x * w, y * w, z * w);
 	}
 
+	public Mtx44 transpose() {
+		Mtx44 src = this;
+		Mtx44 m = new Mtx44();
+
+		// @formatter:off
+		m._00 = src._00;	m._01 = src._10;	m._02 = src._20;	m._03 = src._30;
+		m._10 = src._01;	m._11 = src._11;	m._12 = src._21;	m._13 = src._31;
+		m._20 = src._02;	m._21 = src._12;	m._22 = src._22;	m._23 = src._32;
+		m._30 = src._03;	m._31 = src._13;	m._32 = src._23;	m._33 = src._33;
+		// @formatter:on
+
+		return m;
+	}
+
 	public static Mtx44 trans(double x, double y, double z) {
 		Mtx44 m = new Mtx44();
 
@@ -326,6 +340,20 @@ public class Mtx44 implements Serializable {
 		return trans(trans.x, trans.y, trans.z);
 	}
 
+	public Mtx44 transApply(double x, double y, double z) {
+		Mtx44 m = new Mtx44(this);
+
+		m._03 += x;
+		m._13 += y;
+		m._23 += z;
+
+		return m;
+	}
+
+	public Mtx44 transApply(Vec3 trans) {
+		return transApply(trans.x, trans.y, trans.z);
+	}
+
 	public static Mtx44 scale(double x, double y, double z) {
 		Mtx44 m = new Mtx44();
 
@@ -341,6 +369,24 @@ public class Mtx44 implements Serializable {
 
 	public static Mtx44 scale(Vec3 scale) {
 		return scale(scale.x, scale.y, scale.z);
+	}
+
+	public Mtx44 scaleApply(double x, double y, double z) {
+		Mtx44 src = this;
+		Mtx44 dst = new Mtx44();
+
+		// @formatter:off
+		dst._00 = src._00 * x;	dst._01 = src._01 * x;	dst._02 = src._02 * x;	dst._03 = src._03 * x;
+		dst._10 = src._10 * y;	dst._11 = src._11 * y;	dst._12 = src._12 * y;	dst._13 = src._13 * y;
+		dst._20 = src._20 * z;	dst._21 = src._21 * z;	dst._22 = src._22 * z;	dst._23 = src._23 * z;
+		dst._30 = src._30;	dst._31 = src._31;	dst._32 = src._32;	dst._33 = src._33;
+		// @formatter:on
+
+		return dst;
+	}
+
+	public Mtx44 scaleApply(Vec3 scale) {
+		return scaleApply(scale.x, scale.y, scale.z);
 	}
 
 	public static Mtx44 rotTrigX(double sinA, double cosA) {
@@ -406,8 +452,63 @@ public class Mtx44 implements Serializable {
 		return rotRadZ(deg / 180.0 * Math.PI);
 	}
 
+	public static Mtx44 frustum(double t, double b, double l, double r, double n, double f) {
+		Mtx44 m = new Mtx44();
+		double tmp;
+
+		if(t == b) {
+			throw new IllegalArgumentException("'t' and 'b' clipping planes are equal");
+		}
+
+		if(l == r) {
+			throw new IllegalArgumentException("'l' and 'r' clipping planes are equal");
+		}
+
+		if(n == f) {
+			throw new IllegalArgumentException("'n' and 'f' clipping planes are equal");
+		}
+
+		// NOTE: Be careful about "l" vs. "1" below!
+
+		tmp = 1.0 / (r - l);
+		m._00 = (2 * n) * tmp;
+		m._01 = 0.0;
+		m._02 = (r + l) * tmp;
+		m._03 = 0.0;
+
+		tmp = 1.0 / (t - b);
+		m._10 = 0.0;
+		m._11 = (2 * n) * tmp;
+		m._12 = (t + b) * tmp;
+		m._13 = 0.0;
+
+		m._20 = 0.0;
+		m._21 = 0.0;
+
+		tmp = 1.0 / (f - n);
+
+		// scale z to (-w, 0) range
+		m._22 = -n * tmp;
+		m._23 = -(f * n) * tmp;
+
+		m._30 = 0.0;
+		m._31 = 0.0;
+		m._32 = -1.0;
+		m._33 = 0.0;
+
+		return m;
+	}
+
 	public static Mtx44 perspective(double fovY, double aspect, double n, double f) {
 		Mtx44 m = new Mtx44();
+
+		if((fovY > 0.0) && (fovY < 180.0)) {
+			throw new IllegalArgumentException("'fovY' out of range");
+		}
+
+		if(aspect == 0) {
+			throw new IllegalArgumentException("'aspect' is 0");
+		}
 
 		double angle = fovY / 360.0 * Math.PI;
 		double cot = 1.0f / Math.tan(angle);
@@ -434,6 +535,53 @@ public class Mtx44 implements Serializable {
 		m._31 = 0.0;
 		m._32 = -1.0;
 		m._33 = 0.0;
+
+		return m;
+	}
+
+	public static Mtx44 ortho(double t, double b, double l, double r, double n, double f) {
+		Mtx44 m = new Mtx44();
+		double tmp;
+
+		if(t == b) {
+			throw new IllegalArgumentException("'t' and 'b' clipping planes are equal");
+		}
+
+		if(l == r) {
+			throw new IllegalArgumentException("'l' and 'r' clipping planes are equal");
+		}
+
+		if(n == f) {
+			throw new IllegalArgumentException("'n' and 'f' clipping planes are equal");
+		}
+
+		// NOTE: Be careful about "l" vs. "1" below!
+
+		tmp = 1.0 / (r - l);
+		m._00 = 2.0 * tmp;
+		m._01 = 0.0;
+		m._02 = 0.0;
+		m._03 = -(r + l) * tmp;
+
+		tmp = 1.0 / (t - b);
+		m._10 = 0.0;
+		m._11 = 2.0 * tmp;
+		m._12 = 0.0;
+		m._13 = -(t + b) * tmp;
+
+		m._20 = 0.0;
+		m._21 = 0.0;
+
+		tmp = 1.0 / (f - n);
+
+		// scale z to (-1, 0) range
+		m._22 = -1.0 * tmp;
+		m._23 = -f * tmp;
+
+		m._30 = 0.0;
+		m._31 = 0.0;
+		m._32 = 0.0;
+		m._33 = 1.0;
 
 		return m;
 	}
