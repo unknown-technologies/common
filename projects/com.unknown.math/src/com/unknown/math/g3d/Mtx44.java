@@ -354,6 +354,24 @@ public class Mtx44 implements Serializable {
 		return transApply(trans.x, trans.y, trans.z);
 	}
 
+	public Mtx44 applyTrans(double x, double y, double z) {
+		Mtx44 src = this;
+		Mtx44 dst = new Mtx44(this);
+
+		// @formatter:off
+		dst._03 = src._00 * x + src._01 * y + src._02 * z + src._03;
+		dst._13 = src._10 * x + src._11 * y + src._12 * z + src._13;
+		dst._23 = src._20 * x + src._21 * y + src._22 * z + src._23;
+		dst._33 = src._30 * x + src._31 * y + src._32 * z + src._33;
+		// @formatter:on
+
+		return dst;
+	}
+
+	public Mtx44 applyTrans(Vec3 trans) {
+		return applyTrans(trans.x, trans.y, trans.z);
+	}
+
 	public static Mtx44 scale(double x, double y, double z) {
 		Mtx44 m = new Mtx44();
 
@@ -387,6 +405,24 @@ public class Mtx44 implements Serializable {
 
 	public Mtx44 scaleApply(Vec3 scale) {
 		return scaleApply(scale.x, scale.y, scale.z);
+	}
+
+	public Mtx44 applyScale(double x, double y, double z) {
+		Mtx44 src = this;
+		Mtx44 dst = new Mtx44();
+
+		// @formatter:off
+		dst._00 = src._00 * x;	dst._01 = src._01 * y;	dst._02 = src._02 * z;	dst._03 = src._03;
+		dst._10 = src._10 * x;	dst._11 = src._11 * y;	dst._12 = src._12 * z;	dst._13 = src._13;
+		dst._20 = src._20 * x;	dst._21 = src._21 * y;	dst._22 = src._22 * z;	dst._23 = src._23;
+		dst._30 = src._30 * x;	dst._31 = src._31 * y;	dst._32 = src._32 * z;	dst._33 = src._33;
+		// @formatter:on
+
+		return dst;
+	}
+
+	public Mtx44 applyScale(Vec3 scale) {
+		return applyScale(scale.x, scale.y, scale.z);
 	}
 
 	public static Mtx44 rotTrigX(double sinA, double cosA) {
