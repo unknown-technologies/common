@@ -1,8 +1,11 @@
 package com.unknown.math.g3d;
 
+import java.io.Serializable;
 import java.util.Objects;
 
-public class Vec2 {
+public class Vec2 implements Serializable {
+	private static final long serialVersionUID = 1L;
+
 	public final double x;
 	public final double y;
 

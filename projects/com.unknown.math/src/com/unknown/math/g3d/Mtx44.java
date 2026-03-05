@@ -1,6 +1,10 @@
 package com.unknown.math.g3d;
 
-public class Mtx44 {
+import java.io.Serializable;
+
+public class Mtx44 implements Serializable {
+	private static final long serialVersionUID = 1L;
+
 	public double _00, _01, _02, _03;
 	public double _10, _11, _12, _13;
 	public double _20, _21, _22, _23;
