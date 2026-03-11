@@ -11,6 +11,15 @@ public class Vec3 implements Serializable {
 	public final double z;
 
 	public Vec3(double x, double y, double z) {
+		if(Double.isNaN(x)) {
+			throw new IllegalArgumentException("x is NAN");
+		}
+		if(Double.isNaN(y)) {
+			throw new IllegalArgumentException("y is NAN");
+		}
+		if(Double.isNaN(z)) {
+			throw new IllegalArgumentException("z is NAN");
+		}
 		this.x = x;
 		this.y = y;
 		this.z = z;
@@ -43,6 +52,10 @@ public class Vec3 implements Serializable {
 
 	public Vec3 scale(double scale) {
 		return new Vec3(x * scale, y * scale, z * scale);
+	}
+
+	public Vec3 point(Vec3 other) {
+		return new Vec3(x * other.x, y * other.y, z * other.z);
 	}
 
 	public double length() {
