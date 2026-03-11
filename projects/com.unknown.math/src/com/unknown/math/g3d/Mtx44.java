@@ -621,4 +621,35 @@ public class Mtx44 implements Serializable {
 
 		return m;
 	}
+
+	public boolean isNaN() {
+		for(int i = 0; i < 4; i++) {
+			for(int j = 0; j < 4; j++) {
+				if(Double.isNaN(get(i, j))) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+
+	@Override
+	public String toString() {
+		StringBuilder buf = new StringBuilder("Mtx44[");
+		for(int i = 0; i < 4; i++) {
+			if(i > 0) {
+				buf.append(';');
+			}
+			buf.append('[');
+			for(int j = 0; j < 4; j++) {
+				if(j > 0) {
+					buf.append(';');
+				}
+				buf.append(get(i, j));
+			}
+			buf.append(']');
+		}
+		buf.append("]");
+		return buf.toString();
+	}
 }
