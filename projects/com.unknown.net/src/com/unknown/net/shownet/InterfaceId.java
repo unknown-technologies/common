@@ -1,5 +1,6 @@
 package com.unknown.net.shownet;
 
+import java.text.ParseException;
 import java.util.Arrays;
 
 import com.unknown.util.io.Endianess;
@@ -18,6 +19,15 @@ public class InterfaceId {
 		id[0] = id0;
 		id[1] = id1;
 		id[2] = id2;
+	}
+
+	public InterfaceId(String id) {
+		try {
+			int[] words = parseId(id);
+			System.arraycopy(words, 0, this.id, 0, this.id.length);
+		} catch(ParseException e) {
+			throw new IllegalArgumentException("Invalid interface ID");
+		}
 	}
 
 	public int[] getInterfaceId() {
@@ -42,6 +52,43 @@ public class InterfaceId {
 			}
 		}
 		return String.format("%08X:%02X:%s", id[0], id[1] & 0xFF, new String(chars, 1, chars.length - 1));
+	}
+
+	private static int[] parseId(String s) throws ParseException {
+		if(s.length() != 26) {
+			throw new ParseException("Invalid format", 0);
+		}
+		if(s.charAt(8) != ':') {
+			throw new ParseException("Expected ':', got '" + s.charAt(8) + "'", 8);
+		}
+		if(s.charAt(17) != ':') {
+			throw new ParseException("Expected ':', got '" + s.charAt(17) + "'", 17);
+		}
+
+		int[] id = new int[3];
+
+		try {
+			id[0] = Integer.parseUnsignedInt(s.substring(0, 8), 16) ^ 0xD49A3433;
+		} catch(NumberFormatException e) {
+			throw new ParseException("Failed to parse ID: " + e.getMessage(), 0);
+		}
+		try {
+			id[1] = Integer.parseUnsignedInt(s.substring(9, 17), 16) ^ 0xD49A3433;
+		} catch(NumberFormatException e) {
+			throw new ParseException("Failed to parse ID: " + e.getMessage(), 9);
+		}
+		try {
+			id[2] = Integer.parseUnsignedInt(s.substring(18, 26), 16) ^ 0xD49A3433;
+		} catch(NumberFormatException e) {
+			throw new ParseException("Failed to parse ID: " + e.getMessage(), 9);
+		}
+
+		return id;
+	}
+
+	public static InterfaceId parse(String s) throws ParseException {
+		int[] id = parseId(s);
+		return new InterfaceId(id);
 	}
 
 	@Override
