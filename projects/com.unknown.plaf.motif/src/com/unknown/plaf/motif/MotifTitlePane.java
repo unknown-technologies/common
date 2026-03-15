@@ -599,6 +599,9 @@ public class MotifTitlePane extends JComponent {
 
 	@Override
 	public void paintComponent(Graphics g) {
+		if(getFrame() != null) {
+			setState(getFrame().getExtendedState());
+		}
 	}
 
 	public void setColors(Color c, Color h, Color s) {

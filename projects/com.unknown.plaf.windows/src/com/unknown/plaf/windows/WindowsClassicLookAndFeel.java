@@ -36,4 +36,9 @@ public final class WindowsClassicLookAndFeel extends WindowsLookAndFeel {
 	public String getName() {
 		return "Windows Classic";
 	}
+
+	@Override
+	public boolean getSupportsWindowDecorations() {
+		return true;
+	}
 }
