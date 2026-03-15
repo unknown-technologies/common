@@ -861,12 +861,10 @@ public class MotifRootPaneUI extends BasicRootPaneUI {
 				return;
 			}
 
-			Point convertedPoint = SwingUtilities.convertPoint(
-					w, ev.getPoint(), getTitlePane());
+			Point convertedPoint = SwingUtilities.convertPoint(w, ev.getPoint(), getTitlePane());
 
 			int state = f.getExtendedState();
-			if(getTitlePane() != null &&
-					getTitlePane().contains(convertedPoint)) {
+			if(getTitlePane() != null && getTitlePane().contains(convertedPoint)) {
 				if((ev.getClickCount() % 2) == 0 &&
 						((ev.getModifiersEx() & InputEvent.BUTTON1_DOWN_MASK) != 0)) {
 					if(f.isResizable()) {
@@ -887,10 +885,8 @@ public class MotifRootPaneUI extends BasicRootPaneUI {
 		 */
 		private int calculateCorner(Window w, int x, int y) {
 			Insets insets = w.getInsets();
-			int xPosition = calculatePosition(x - insets.left,
-					w.getWidth() - insets.left - insets.right);
-			int yPosition = calculatePosition(y - insets.top,
-					w.getHeight() - insets.top - insets.bottom);
+			int xPosition = calculatePosition(x - insets.left, w.getWidth() - insets.left - insets.right);
+			int yPosition = calculatePosition(y - insets.top, w.getHeight() - insets.top - insets.bottom);
 
 			if(xPosition == -1 || yPosition == -1) {
 				return -1;
