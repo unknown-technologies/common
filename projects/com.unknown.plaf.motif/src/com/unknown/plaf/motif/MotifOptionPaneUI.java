@@ -73,11 +73,9 @@ public class MotifOptionPaneUI extends BasicOptionPaneUI {
 		return null;
 	}
 
-	@SuppressWarnings("serial") // anonymous class
 	@Override
 	protected Container createSeparator() {
 		return new JPanel() {
-
 			@Override
 			public Dimension getPreferredSize() {
 				return new Dimension(10, 2);

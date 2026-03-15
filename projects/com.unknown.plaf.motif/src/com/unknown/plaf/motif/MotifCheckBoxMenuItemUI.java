@@ -38,6 +38,8 @@ import javax.swing.event.MouseInputListener;
 import javax.swing.plaf.ComponentUI;
 import javax.swing.plaf.basic.BasicCheckBoxMenuItemUI;
 
+import com.unknown.util.ui.plaf.SwingUtilities2;
+
 /**
  * MotifCheckboxMenuItem implementation
  *

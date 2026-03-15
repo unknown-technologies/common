@@ -23,12 +23,14 @@
  * questions.
  */
 
-package com.unknown.plaf.motif;
+package com.unknown.util.ui.plaf;
 
 import static java.awt.RenderingHints.KEY_TEXT_ANTIALIASING;
 import static java.awt.RenderingHints.KEY_TEXT_LCD_CONTRAST;
+import static java.awt.RenderingHints.VALUE_TEXT_ANTIALIAS_DEFAULT;
 import static java.awt.RenderingHints.VALUE_TEXT_ANTIALIAS_LCD_HBGR;
 import static java.awt.RenderingHints.VALUE_TEXT_ANTIALIAS_LCD_HRGB;
+import static java.awt.RenderingHints.VALUE_TEXT_ANTIALIAS_OFF;
 import static java.awt.geom.AffineTransform.TYPE_FLIP;
 import static java.awt.geom.AffineTransform.TYPE_MASK_SCALE;
 import static java.awt.geom.AffineTransform.TYPE_TRANSLATION;
@@ -43,10 +45,12 @@ import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.GraphicsConfiguration;
+import java.awt.Insets;
 import java.awt.Point;
 import java.awt.PrintGraphics;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
+import java.awt.Shape;
 import java.awt.Toolkit;
 import java.awt.event.InputEvent;
 import java.awt.event.MouseEvent;
@@ -54,6 +58,7 @@ import java.awt.font.FontRenderContext;
 import java.awt.font.GlyphVector;
 import java.awt.font.LineBreakMeasurer;
 import java.awt.font.TextAttribute;
+import java.awt.font.TextHitInfo;
 import java.awt.font.TextLayout;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Rectangle2D;
@@ -73,8 +78,11 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
 
+import javax.swing.ButtonModel;
+import javax.swing.Icon;
 import javax.swing.JComponent;
 import javax.swing.JList;
+import javax.swing.JMenu;
 import javax.swing.JTable;
 import javax.swing.ListCellRenderer;
 import javax.swing.ListSelectionModel;
@@ -139,6 +147,10 @@ public class SwingUtilities2 {
 	 */
 	private static final StringBuilder SKIP_CLICK_COUNT = new StringBuilder("skipClickCount");
 
+	/** Client Property key for the text maximal offsets for BasicMenuItemUI */
+	public static final StringUIClientPropertyKey BASICMENUITEMUI_MAX_TEXT_OFFSET = new StringUIClientPropertyKey(
+			"maxTextOffset");
+
 	// all access to charsBuffer is to be synchronized on charsBufferLock
 	private static final int CHAR_BUFFER_SIZE = 100;
 	private static final Object charsBufferLock = new Object();
@@ -146,6 +158,24 @@ public class SwingUtilities2 {
 
 	static {
 		fontCache = new LSBCacheEntry[CACHE_SIZE];
+	}
+
+	@SuppressWarnings("unchecked")
+	public static void putAATextInfo(@SuppressWarnings("unused") boolean lafCondition, Map<Object, Object> map) {
+		// SunToolkit.setAAFontSettingsCondition(lafCondition);
+		Toolkit tk = Toolkit.getDefaultToolkit();
+		Object desktopHints = tk.getDesktopProperty(SunToolkit.DESKTOPFONTHINTS);
+
+		if(desktopHints instanceof Map) {
+			Map<Object, Object> hints = (Map<Object, Object>) desktopHints;
+			Object aaHint = hints.get(KEY_TEXT_ANTIALIASING);
+			if(aaHint == null || aaHint == VALUE_TEXT_ANTIALIAS_OFF ||
+					aaHint == VALUE_TEXT_ANTIALIAS_DEFAULT) {
+				return;
+			}
+			map.put(KEY_TEXT_ANTIALIASING, aaHint);
+			map.put(KEY_TEXT_LCD_CONTRAST, hints.get(KEY_TEXT_LCD_CONTRAST));
+		}
 	}
 
 	/**
@@ -291,8 +321,7 @@ public class SwingUtilities2 {
 	 *                Font to get FontMetrics for
 	 */
 	@SuppressWarnings("deprecation")
-	public static FontMetrics getFontMetrics(JComponent c, Graphics g,
-			Font font) {
+	public static FontMetrics getFontMetrics(JComponent c, Graphics g, Font font) {
 		if(c != null) {
 			// Note: We assume that we're using the FontMetrics
 			// from the widget to layout out text, otherwise we can get
@@ -581,6 +610,100 @@ public class SwingUtilities2 {
 	}
 
 	/**
+	 * Draws the string at the specified location underlining the specified character.
+	 *
+	 * @param c
+	 *                JComponent that will display the string, may be null
+	 * @param g
+	 *                Graphics to draw the text to
+	 * @param text
+	 *                String to display
+	 * @param underlinedIndex
+	 *                Index of a character in the string to underline
+	 * @param x
+	 *                X coordinate to draw the text at
+	 * @param y
+	 *                Y coordinate to draw the text at
+	 */
+
+	public static void drawStringUnderlineCharAt(JComponent c, Graphics g, String text, int underlinedIndex, int x,
+			int y) {
+		drawStringUnderlineCharAt(c, g, text, underlinedIndex, x, y, false);
+	}
+
+	/**
+	 * Draws the string at the specified location underlining the specified character.
+	 *
+	 * @param c
+	 *                JComponent that will display the string, may be null
+	 * @param g
+	 *                Graphics to draw the text to
+	 * @param text
+	 *                String to display
+	 * @param underlinedIndex
+	 *                Index of a character in the string to underline
+	 * @param x
+	 *                X coordinate to draw the text at
+	 * @param y
+	 *                Y coordinate to draw the text at
+	 * @param useFPAPI
+	 *                use floating point API
+	 */
+	public static void drawStringUnderlineCharAt(JComponent c, Graphics g, String text, int underlinedIndex,
+			float x, float y, boolean useFPAPI) {
+		if(text == null || text.length() <= 0) {
+			return;
+		}
+		SwingUtilities2.drawString(c, g, text, x, y, useFPAPI);
+		int textLength = text.length();
+		if(underlinedIndex >= 0 && underlinedIndex < textLength) {
+			float underlineRectY = y;
+			int underlineRectHeight = 1;
+			float underlineRectX = 0;
+			int underlineRectWidth = 0;
+			boolean isPrinting = isPrinting(g);
+			boolean needsTextLayout = isPrinting;
+			if(!needsTextLayout) {
+				synchronized(charsBufferLock) {
+					syncCharsBuffer(text);
+					needsTextLayout = isComplexLayout(charsBuffer, 0, textLength);
+				}
+			}
+			if(!needsTextLayout) {
+				FontMetrics fm = g.getFontMetrics();
+				underlineRectX = x +
+						SwingUtilities2.stringWidth(c, fm,
+								text.substring(0, underlinedIndex));
+				underlineRectWidth = fm.charWidth(text.charAt(underlinedIndex));
+			} else {
+				Graphics2D g2d = getGraphics2D(g);
+				if(g2d != null) {
+					TextLayout layout = createTextLayout(c, text, g2d.getFont(),
+							g2d.getFontRenderContext());
+					if(isPrinting) {
+						float screenWidth = (float) g2d.getFont()
+								.getStringBounds(text, getFontRenderContext(c))
+								.getWidth();
+						// If text fits the screenWidth, then do not need to justify
+						if(SwingUtilities2.stringWidth(c, g2d.getFontMetrics(),
+								text) > screenWidth) {
+							layout = layout.getJustifiedLayout(screenWidth);
+						}
+					}
+					TextHitInfo leading = TextHitInfo.leading(underlinedIndex);
+					TextHitInfo trailing = TextHitInfo.trailing(underlinedIndex);
+					Shape shape = layout.getVisualHighlightShape(leading, trailing);
+					Rectangle rect = shape.getBounds();
+					underlineRectX = x + rect.x;
+					underlineRectWidth = rect.width;
+				}
+			}
+			g.fillRect((int) underlineRectX, (int) underlineRectY + 1, underlineRectWidth,
+					underlineRectHeight);
+		}
+	}
+
+	/**
 	 * A variation of locationToIndex() which only returns an index if the Point is within the actual bounds of a
 	 * list item (not just in the cell) and if the JList has the "List.isFileList" client property set. Otherwise,
 	 * this method returns -1. This is used to make Windows {@literal L&F} JFileChooser act like native dialogs.
@@ -689,45 +812,26 @@ public class SwingUtilities2 {
 	 *
 	 * this is used for printing
 	 */
-	public static int drawChars(JComponent c, Graphics g,
-			char[] data,
-			int offset,
-			int length,
-			int x,
-			int y) {
+	public static int drawChars(JComponent c, Graphics g, char[] data, int offset, int length, int x, int y) {
 		return (int) drawChars(c, g, data, offset, length, x, y, false);
 	}
 
-	public static float drawChars(JComponent c, Graphics g,
-			char[] data,
-			int offset,
-			int length,
-			float x,
-			float y) {
+	public static float drawChars(JComponent c, Graphics g, char[] data, int offset, int length, float x, float y) {
 		return drawChars(c, g, data, offset, length, x, y, true);
 	}
 
-	public static float drawChars(JComponent c, Graphics g,
-			char[] data,
-			int offset,
-			int length,
-			float x,
-			float y,
+	public static float drawChars(JComponent c, Graphics g, char[] data, int offset, int length, float x, float y,
 			boolean useFPAPI) {
 		if(length <= 0) { // no need to paint empty strings
 			return x;
 		}
-		float nextX = x + getFontCharsWidth(data, offset, length,
-				getFontMetrics(c, g),
-				useFPAPI);
+		float nextX = x + getFontCharsWidth(data, offset, length, getFontMetrics(c, g), useFPAPI);
 		if(isPrinting(g)) {
 			Graphics2D g2d = getGraphics2D(g);
 			if(g2d != null) {
 				FontRenderContext deviceFontRenderContext = g2d.getFontRenderContext();
 				FontRenderContext frc = getFontRenderContext(c);
-				if(frc != null &&
-						!isFontRenderContextPrintCompatible(deviceFontRenderContext, frc)) {
-
+				if(frc != null && !isFontRenderContextPrintCompatible(deviceFontRenderContext, frc)) {
 					String text = new String(data, offset, length);
 					TextLayout layout = new TextLayout(text, g2d.getFont(),
 							deviceFontRenderContext);
@@ -758,9 +862,7 @@ public class SwingUtilities2 {
 		}
 		// Assume we're not printing if we get here, or that we are invoked
 		// via Swing text printing which is laid out for the printer.
-		Object aaHint = (c == null)
-				? null
-				: c.getClientProperty(KEY_TEXT_ANTIALIASING);
+		Object aaHint = (c == null) ? null : c.getClientProperty(KEY_TEXT_ANTIALIASING);
 
 		if(!(g instanceof Graphics2D)) {
 			g.drawChars(data, offset, length, (int) x, (int) y);
@@ -769,7 +871,6 @@ public class SwingUtilities2 {
 
 		Graphics2D g2 = (Graphics2D) g;
 		if(aaHint != null) {
-
 			Object oldContrast = null;
 			Object oldAAValue = g2.getRenderingHint(KEY_TEXT_ANTIALIASING);
 			if(aaHint != null && aaHint != oldAAValue) {
@@ -803,14 +904,11 @@ public class SwingUtilities2 {
 		return nextX;
 	}
 
-	public static float getFontCharWidth(char c, FontMetrics fm,
-			boolean useFPAPI) {
+	public static float getFontCharWidth(char c, FontMetrics fm, boolean useFPAPI) {
 		return getFontCharsWidth(new char[] { c }, 0, 1, fm, useFPAPI);
 	}
 
-	public static float getFontCharsWidth(char[] data, int offset, int len,
-			FontMetrics fm,
-			boolean useFPAPI) {
+	public static float getFontCharsWidth(char[] data, int offset, int len, FontMetrics fm, boolean useFPAPI) {
 		if(len == 0) {
 			return 0;
 		}
@@ -919,8 +1017,7 @@ public class SwingUtilities2 {
 		}
 	}
 
-	private static TextLayout createTextLayout(JComponent c, String s,
-			Font f, FontRenderContext frc) {
+	private static TextLayout createTextLayout(JComponent c, String s, Font f, FontRenderContext frc) {
 		Object shaper = (c == null ? null : c.getClientProperty(TextAttribute.NUMERIC_SHAPING));
 		if(shaper == null) {
 			return new TextLayout(s, f, frc);
@@ -938,9 +1035,7 @@ public class SwingUtilities2 {
 	 * metrics anyway + any translation component in the transform of either FRC, as it does not affect metrics.
 	 * Compatible means no special handling needed for text painting
 	 */
-	private static boolean isFontRenderContextPrintCompatible(FontRenderContext frc1,
-			FontRenderContext frc2) {
-
+	private static boolean isFontRenderContextPrintCompatible(FontRenderContext frc1, FontRenderContext frc2) {
 		if(frc1 == frc2) {
 			return true;
 		}
@@ -966,10 +1061,7 @@ public class SwingUtilities2 {
 		double[] mat2 = new double[4];
 		frc1.getTransform().getMatrix(mat1);
 		frc2.getTransform().getMatrix(mat2);
-		return mat1[0] == mat2[0] &&
-				mat1[1] == mat2[1] &&
-				mat1[2] == mat2[2] &&
-				mat1[3] == mat2[3];
+		return mat1[0] == mat2[0] && mat1[1] == mat2[1] && mat1[2] == mat2[2] && mat1[3] == mat2[3];
 	}
 
 	/*
@@ -1005,15 +1097,14 @@ public class SwingUtilities2 {
 	 */
 	private static FontRenderContext getFontRenderContext(Component c, FontMetrics fm) {
 		assert fm != null || c != null;
-		return (fm != null) ? fm.getFontRenderContext()
-				: getFontRenderContext(c);
+		return (fm != null) ? fm.getFontRenderContext() : getFontRenderContext(c);
 	}
 
 	/*
 	 * returns true if the Graphics is print Graphics false otherwise
 	 */
 	static boolean isPrinting(Graphics g) {
-		return(g instanceof PrinterGraphics || g instanceof PrintGraphics);
+		return g instanceof PrinterGraphics || g instanceof PrintGraphics;
 	}
 
 	/**
@@ -1021,8 +1112,8 @@ public class SwingUtilities2 {
 	 * highlight.
 	 *
 	 * Returns true only if the highlight painter for the specified highlight is the swing painter (whether inner
-	 * class of javax.swing.text.DefaultHighlighter or com.sun.java.swing.plaf.windows.WindowsTextUI) and its
-	 * background color is null or equals to the selection color of the text component.
+	 * class of javax.swing.text.DefaultHighlighter or com.unknown.plaf.windows.WindowsTextUI) and its background
+	 * color is null or equals to the selection color of the text component.
 	 *
 	 * This is a hack for fixing both bugs 4761990 and 5003294
 	 */
@@ -1030,13 +1121,12 @@ public class SwingUtilities2 {
 		Highlighter.HighlightPainter painter = h.getPainter();
 		String painterClass = painter.getClass().getName();
 		if(painterClass.indexOf("javax.swing.text.DefaultHighlighter") != 0 &&
-				painterClass.indexOf("com.sun.java.swing.plaf.windows.WindowsTextUI") != 0) {
+				painterClass.indexOf("com.unknown.plaf.windows.WindowsTextUI") != 0) {
 			return false;
 		}
 		try {
 			DefaultHighlighter.DefaultHighlightPainter defPainter = (DefaultHighlighter.DefaultHighlightPainter) painter;
-			if(defPainter.getColor() != null &&
-					!defPainter.getColor().equals(c.getSelectionColor())) {
+			if(defPainter.getColor() != null && !defPainter.getColor().equals(c.getSelectionColor())) {
 				return false;
 			}
 		} catch(ClassCastException e) {
@@ -1487,8 +1577,7 @@ public class SwingUtilities2 {
 	 * @throws NullPointerException
 	 *                 if {@code rect} or {@code p} are {@code null}
 	 */
-	private static Section liesIn(Rectangle rect, Point p, boolean horizontal,
-			boolean ltr, boolean three) {
+	private static Section liesIn(Rectangle rect, Point p, boolean horizontal, boolean ltr, boolean three) {
 
 		/* beginning of the rectangle on the axis */
 		int p0;
@@ -1554,8 +1643,7 @@ public class SwingUtilities2 {
 	 * @throws NullPointerException
 	 *                 if {@code rect} or {@code p} are {@code null}
 	 */
-	public static Section liesInHorizontal(Rectangle rect, Point p,
-			boolean ltr, boolean three) {
+	public static Section liesInHorizontal(Rectangle rect, Point p, boolean ltr, boolean three) {
 		return liesIn(rect, p, true, ltr, three);
 	}
 
@@ -1577,8 +1665,7 @@ public class SwingUtilities2 {
 	 * @throws NullPointerException
 	 *                 if {@code rect} or {@code p} are {@code null}
 	 */
-	public static Section liesInVertical(Rectangle rect, Point p,
-			boolean three) {
+	public static Section liesInVertical(Rectangle rect, Point p, boolean three) {
 		return liesIn(rect, p, false, false, three);
 	}
 
@@ -1596,8 +1683,7 @@ public class SwingUtilities2 {
 	 * @see JTable#convertColumnIndexToModel(int)
 	 * @see javax.swing.plaf.basic.BasicTableHeaderUI
 	 */
-	public static int convertColumnIndexToModel(TableColumnModel cm,
-			int viewColumnIndex) {
+	public static int convertColumnIndexToModel(TableColumnModel cm, int viewColumnIndex) {
 		if(viewColumnIndex < 0) {
 			return viewColumnIndex;
 		}
@@ -1618,8 +1704,7 @@ public class SwingUtilities2 {
 	 * @see JTable#convertColumnIndexToView(int)
 	 * @see javax.swing.plaf.basic.BasicTableHeaderUI
 	 */
-	public static int convertColumnIndexToView(TableColumnModel cm,
-			int modelColumnIndex) {
+	public static int convertColumnIndexToView(TableColumnModel cm, int modelColumnIndex) {
 		if(modelColumnIndex < 0) {
 			return modelColumnIndex;
 		}
@@ -1742,8 +1827,7 @@ public class SwingUtilities2 {
 	 * @since 11
 	 */
 	public static boolean isScaleChanged(final PropertyChangeEvent ev) {
-		return isScaleChanged(ev.getPropertyName(), ev.getOldValue(),
-				ev.getNewValue());
+		return isScaleChanged(ev.getPropertyName(), ev.getOldValue(), ev.getNewValue());
 	}
 
 	/**
@@ -1758,9 +1842,7 @@ public class SwingUtilities2 {
 	 * @return whether or not the scale was changed
 	 * @since 11
 	 */
-	public static boolean isScaleChanged(final String name,
-			final Object oldValue,
-			final Object newValue) {
+	public static boolean isScaleChanged(final String name, final Object oldValue, final Object newValue) {
 		if(oldValue == newValue || !"graphicsConfiguration".equals(name)) {
 			return false;
 		}
@@ -1769,5 +1851,105 @@ public class SwingUtilities2 {
 		var newTx = newGC != null ? newGC.getDefaultTransform() : null;
 		var oldTx = oldGC != null ? oldGC.getDefaultTransform() : null;
 		return !Objects.equals(newTx, oldTx);
+	}
+
+	public static void applyInsets(Rectangle rect, Insets insets) {
+		applyInsets(rect, insets, true);
+	}
+
+	public static void applyInsets(Rectangle rect, Insets insets, boolean leftToRight) {
+		if(insets != null) {
+			rect.x += leftToRight ? insets.left : insets.right;
+			rect.y += insets.top;
+			rect.width -= (insets.left + insets.right);
+			rect.height -= (insets.top + insets.bottom);
+		}
+	}
+
+	public static void paintCheckIcon(Graphics g, MenuItemLayoutHelper lh, MenuItemLayoutHelper.LayoutResult lr,
+			Color holdc, Color foreground) {
+		if(lh.getCheckIcon() != null) {
+			ButtonModel model = lh.getMenuItem().getModel();
+			if(model.isArmed() || (lh.getMenuItem() instanceof JMenu && model.isSelected())) {
+				g.setColor(foreground);
+			} else {
+				g.setColor(holdc);
+			}
+			if(lh.useCheckAndArrow()) {
+				lh.getCheckIcon().paintIcon(lh.getMenuItem(), g, lr.getCheckRect().x,
+						lr.getCheckRect().y);
+			}
+			g.setColor(holdc);
+		}
+	}
+
+	public static void paintIcon(Graphics g, MenuItemLayoutHelper lh, MenuItemLayoutHelper.LayoutResult lr,
+			Color holdc) {
+		if(lh.getIcon() != null) {
+			Icon icon;
+			ButtonModel model = lh.getMenuItem().getModel();
+			if(!model.isEnabled()) {
+				icon = lh.getMenuItem().getDisabledIcon();
+			} else if(model.isPressed() && model.isArmed()) {
+				icon = lh.getMenuItem().getPressedIcon();
+				if(icon == null) {
+					// Use default icon
+					icon = lh.getMenuItem().getIcon();
+				}
+			} else {
+				icon = lh.getMenuItem().getIcon();
+			}
+
+			if(icon != null) {
+				icon.paintIcon(lh.getMenuItem(), g, lr.getIconRect().x, lr.getIconRect().y);
+				g.setColor(holdc);
+			}
+		}
+	}
+
+	public static void paintAccText(Graphics g, MenuItemLayoutHelper lh, MenuItemLayoutHelper.LayoutResult lr,
+			Color disabledForeground, Color acceleratorSelectionForeground, Color acceleratorForeground) {
+		if(!lh.getAccText().isEmpty()) {
+			ButtonModel model = lh.getMenuItem().getModel();
+			g.setFont(lh.getAccFontMetrics().getFont());
+			if(!model.isEnabled()) {
+				// paint the accText disabled
+				if(disabledForeground != null) {
+					g.setColor(disabledForeground);
+					drawString(lh.getMenuItem(), g, lh.getAccText(), lr.getAccRect().x,
+							lr.getAccRect().y + lh.getAccFontMetrics().getAscent());
+				} else {
+					g.setColor(lh.getMenuItem().getBackground().brighter());
+					drawString(lh.getMenuItem(), g, lh.getAccText(), lr.getAccRect().x,
+							lr.getAccRect().y + lh.getAccFontMetrics().getAscent());
+					g.setColor(lh.getMenuItem().getBackground().darker());
+					drawString(lh.getMenuItem(), g, lh.getAccText(), lr.getAccRect().x - 1,
+							lr.getAccRect().y + lh.getFontMetrics().getAscent() - 1);
+				}
+			} else {
+				// paint the accText normally
+				if(model.isArmed() || (lh.getMenuItem() instanceof JMenu && model.isSelected())) {
+					g.setColor(acceleratorSelectionForeground);
+				} else {
+					g.setColor(acceleratorForeground);
+				}
+				drawString(lh.getMenuItem(), g, lh.getAccText(), lr.getAccRect().x,
+						lr.getAccRect().y + lh.getAccFontMetrics().getAscent());
+			}
+		}
+	}
+
+	public static void paintArrowIcon(Graphics g, MenuItemLayoutHelper lh, MenuItemLayoutHelper.LayoutResult lr,
+			Color foreground) {
+		if(lh.getArrowIcon() != null) {
+			ButtonModel model = lh.getMenuItem().getModel();
+			if(model.isArmed() || (lh.getMenuItem() instanceof JMenu && model.isSelected())) {
+				g.setColor(foreground);
+			}
+			if(lh.useCheckAndArrow()) {
+				lh.getArrowIcon().paintIcon(lh.getMenuItem(), g, lr.getArrowRect().x,
+						lr.getArrowRect().y);
+			}
+		}
 	}
 }

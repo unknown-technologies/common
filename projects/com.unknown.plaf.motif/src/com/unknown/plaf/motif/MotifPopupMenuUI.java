@@ -42,6 +42,8 @@ import javax.swing.event.ChangeListener;
 import javax.swing.plaf.ComponentUI;
 import javax.swing.plaf.basic.BasicPopupMenuUI;
 
+import com.unknown.util.ui.plaf.SwingUtilities2;
+
 /**
  * A Motif {@literal L&F} implementation of PopupMenuUI.
  *

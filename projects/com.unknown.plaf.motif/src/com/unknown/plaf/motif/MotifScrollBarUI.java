@@ -25,6 +25,9 @@
 
 package com.unknown.plaf.motif;
 
+import static com.unknown.util.ui.plaf.SwingUtilities2.drawHLine;
+import static com.unknown.util.ui.plaf.SwingUtilities2.drawVLine;
+
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Insets;
@@ -35,9 +38,6 @@ import javax.swing.JComponent;
 import javax.swing.JScrollBar;
 import javax.swing.plaf.ComponentUI;
 import javax.swing.plaf.basic.BasicScrollBarUI;
-
-import static com.unknown.plaf.motif.SwingUtilities2.drawHLine;
-import static com.unknown.plaf.motif.SwingUtilities2.drawVLine;
 
 /**
  * Implementation of ScrollBarUI for the Motif Look and Feel

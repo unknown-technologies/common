@@ -1,4 +1,4 @@
-package com.unknown.plaf.motif;
+package com.unknown.util.ui.plaf;
 
 public class FontUtilities {
 

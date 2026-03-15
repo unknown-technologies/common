@@ -27,13 +27,16 @@ package com.unknown.plaf.motif;
 
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Dialog;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.FontMetrics;
+import java.awt.Frame;
 import java.awt.Graphics;
 import java.awt.Insets;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.Window;
 
 import javax.swing.AbstractButton;
 import javax.swing.ButtonModel;
@@ -42,9 +45,13 @@ import javax.swing.JComponent;
 import javax.swing.JInternalFrame;
 import javax.swing.JMenuBar;
 import javax.swing.JPopupMenu;
+import javax.swing.JRootPane;
+import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.border.AbstractBorder;
 import javax.swing.plaf.UIResource;
+
+import com.unknown.util.ui.plaf.SwingUtilities2;
 
 /**
  * Factory object that can vend Icons appropriate for the basic {@literal L & F}.
@@ -198,7 +205,6 @@ public class MotifBorders {
 
 	@SuppressWarnings("serial") // Superclass is not serializable across versions
 	public static class ToggleButtonBorder extends ButtonBorder {
-
 		public ToggleButtonBorder(Color shadow, Color highlight, Color darkShadow, Color focus) {
 			super(shadow, highlight, darkShadow, focus);
 		}
@@ -235,7 +241,6 @@ public class MotifBorders {
 
 	@SuppressWarnings("serial") // Superclass is not serializable across versions
 	public static class MenuBarBorder extends ButtonBorder {
-
 		public MenuBarBorder(Color shadow, Color highlight, Color darkShadow, Color focus) {
 			super(shadow, highlight, darkShadow, focus);
 		}
@@ -263,7 +268,6 @@ public class MotifBorders {
 
 	@SuppressWarnings("serial") // Superclass is not serializable across versions
 	public static class FrameBorder extends AbstractBorder implements UIResource {
-
 		JComponent jcomp;
 		Color frameHighlight;
 		Color frameColor;
@@ -462,7 +466,6 @@ public class MotifBorders {
 
 	@SuppressWarnings("serial") // Superclass is not serializable across versions
 	public static class InternalFrameBorder extends FrameBorder {
-
 		JInternalFrame frame;
 
 		// The size of the bounding box for Motif frame corners.
@@ -592,6 +595,156 @@ public class MotifBorders {
 		@Override
 		protected boolean isActiveFrame() {
 			return frame.isSelected();
+		}
+	}
+
+	@SuppressWarnings("serial") // Superclass is not serializable across versions
+	public static class RootPaneBorder extends FrameBorder {
+		private JRootPane root;
+		private Window window;
+
+		// The size of the bounding box for Motif frame corners.
+		public static final int CORNER_SIZE = 24;
+
+		public RootPaneBorder(JRootPane root) {
+			super(root);
+			this.root = root;
+		}
+
+		public void setRoot(JRootPane root) {
+			this.root = root;
+		}
+
+		public JRootPane getRoot() {
+			return root;
+		}
+
+		private Window getWindow() {
+			if(window == null) {
+				window = SwingUtilities.getWindowAncestor(root);
+			}
+			return window;
+		}
+
+		private boolean isResizable() {
+			Window win = getWindow();
+			if(win == null) {
+				return false;
+			} else if(win instanceof Frame) {
+				Frame frame = (Frame) win;
+				return frame.isResizable();
+			} else if(win instanceof Dialog) {
+				Dialog dialog = (Dialog) win;
+				return dialog.isResizable();
+			} else {
+				return false;
+			}
+		}
+
+		/**
+		 * Returns the width of the InternalFrameBorder's resize controls, appearing along the
+		 * InternalFrameBorder's bottom border. Clicking and dragging within these controls lets the user change
+		 * both the InternalFrame's width and height, while dragging between the controls constrains resizing to
+		 * just the vertical dimension. Override this method if you implement your own bottom border painting
+		 * and use a resize control with a different size.
+		 */
+		public int resizePartWidth() {
+			if(!isResizable()) {
+				return 0;
+			}
+			return FrameBorder.BORDER_SIZE;
+		}
+
+		/**
+		 * Draws the InternalFrameBorder's top border.
+		 */
+		@Override
+		protected boolean drawTopBorder(Component c, Graphics g, int x, int y, int width, int height) {
+			if(super.drawTopBorder(c, g, x, y, width, height) && isResizable()) {
+				g.setColor(getFrameShadow());
+				g.drawLine(CORNER_SIZE - 1, y + 1, CORNER_SIZE - 1, y + 4);
+				g.drawLine(width - CORNER_SIZE - 1, y + 1,
+						width - CORNER_SIZE - 1, y + 4);
+
+				g.setColor(getFrameHighlight());
+				g.drawLine(CORNER_SIZE, y, CORNER_SIZE, y + 4);
+				g.drawLine(width - CORNER_SIZE, y, width - CORNER_SIZE, y + 4);
+				return true;
+			}
+			return false;
+		}
+
+		/**
+		 * Draws the InternalFrameBorder's left border.
+		 */
+		@Override
+		protected boolean drawLeftBorder(Component c, Graphics g, int x, int y, int width, int height) {
+			if(super.drawLeftBorder(c, g, x, y, width, height) && isResizable()) {
+				g.setColor(getFrameHighlight());
+				int topY = y + CORNER_SIZE;
+				g.drawLine(x, topY, x + 4, topY);
+				int bottomY = height - CORNER_SIZE;
+				g.drawLine(x + 1, bottomY, x + 5, bottomY);
+				g.setColor(getFrameShadow());
+				g.drawLine(x + 1, topY - 1, x + 5, topY - 1);
+				g.drawLine(x + 1, bottomY - 1, x + 5, bottomY - 1);
+				return true;
+			}
+			return false;
+		}
+
+		/**
+		 * Draws the InternalFrameBorder's right border.
+		 */
+		@Override
+		protected boolean drawRightBorder(Component c, Graphics g, int x, int y, int width, int height) {
+			if(super.drawRightBorder(c, g, x, y, width, height) && isResizable()) {
+				int startX = width - getBorderInsets(c).right;
+				g.setColor(getFrameHighlight());
+				int topY = y + CORNER_SIZE;
+				g.drawLine(startX, topY, width - 2, topY);
+				int bottomY = height - CORNER_SIZE;
+				g.drawLine(startX + 1, bottomY, startX + 3, bottomY);
+				g.setColor(getFrameShadow());
+				g.drawLine(startX + 1, topY - 1, width - 2, topY - 1);
+				g.drawLine(startX + 1, bottomY - 1, startX + 3, bottomY - 1);
+				return true;
+			}
+			return false;
+		}
+
+		/**
+		 * Draws the InternalFrameBorder's bottom border.
+		 */
+		@Override
+		protected boolean drawBottomBorder(Component c, Graphics g, int x, int y, int width, int height) {
+			if(super.drawBottomBorder(c, g, x, y, width, height) && isResizable()) {
+				int startY = height - getBorderInsets(c).bottom;
+
+				g.setColor(getFrameShadow());
+				g.drawLine(CORNER_SIZE - 1, startY + 1,
+						CORNER_SIZE - 1, height - 1);
+				g.drawLine(width - CORNER_SIZE, startY + 1,
+						width - CORNER_SIZE, height - 1);
+
+				g.setColor(getFrameHighlight());
+				g.drawLine(CORNER_SIZE, startY, CORNER_SIZE, height - 2);
+				g.drawLine(width - CORNER_SIZE + 1, startY,
+						width - CORNER_SIZE + 1, height - 2);
+				return true;
+			}
+			return false;
+		}
+
+		// Returns true if the associated internal frame has focus.
+		@Override
+		protected boolean isActiveFrame() {
+			Window win = getWindow();
+			if(win != null) {
+				return win.isActive();
+			} else {
+				return false;
+			}
 		}
 	}
 

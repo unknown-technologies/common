@@ -23,7 +23,7 @@
  * questions.
  */
 
-package com.unknown.plaf.motif;
+package com.unknown.util.ui.plaf;
 
 import java.awt.Image;
 

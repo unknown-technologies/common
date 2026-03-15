@@ -60,14 +60,14 @@ import javax.swing.plaf.basic.BasicInternalFrameTitlePane;
 @SuppressWarnings("serial") // Superclass is not serializable across versions
 public class MotifInternalFrameTitlePane
 		extends BasicInternalFrameTitlePane implements LayoutManager, ActionListener, PropertyChangeListener {
-	SystemButton systemButton;
-	MinimizeButton minimizeButton;
-	MaximizeButton maximizeButton;
-	JPopupMenu systemMenu;
-	Title title;
-	Color color;
-	Color highlight;
-	Color shadow;
+	private SystemButton systemButton;
+	private MinimizeButton minimizeButton;
+	private MaximizeButton maximizeButton;
+	private JPopupMenu systemMenu;
+	private Title title;
+	private Color color;
+	private Color highlight;
+	private Color shadow;
 
 	// The width and height of a title pane button
 	public static final int BUTTON_SIZE = 19;  // 17 + 1 pixel border

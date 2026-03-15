@@ -52,11 +52,10 @@ import javax.swing.plaf.basic.BasicInternalFrameUI;
  * @author Tom Ball
  */
 public class MotifInternalFrameUI extends BasicInternalFrameUI {
-
-	Color color;
-	Color highlight;
-	Color shadow;
-	MotifInternalFrameTitlePane titlePane;
+	private Color color;
+	private Color highlight;
+	private Color shadow;
+	private MotifInternalFrameTitlePane titlePane;
 
 	/**
 	 * As of Java 2 platform v1.3 this previously undocumented field is no longer used. Key bindings are now defined
@@ -133,7 +132,6 @@ public class MotifInternalFrameUI extends BasicInternalFrameUI {
 		}
 	}
 
-	@SuppressWarnings("serial") // anonymous class
 	@Override
 	protected void setupMenuOpenKey() {
 		super.setupMenuOpenKey();
@@ -156,7 +154,6 @@ public class MotifInternalFrameUI extends BasicInternalFrameUI {
 		}
 	}
 
-	@SuppressWarnings("serial") // anonymous class
 	@Override
 	protected void setupMenuCloseKey() {
 		ActionMap map = SwingUtilities.getUIActionMap(frame);

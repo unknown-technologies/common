@@ -42,8 +42,7 @@ import javax.swing.plaf.basic.BasicRadioButtonUI;
  * @author Rich Schiavi
  */
 public class MotifRadioButtonUI extends BasicRadioButtonUI {
-
-	private static final Object MOTIF_RADIO_BUTTON_UI_KEY = new Object();
+	private static final ComponentUI UI = new MotifRadioButtonUI();
 
 	protected Color focusColor;
 
@@ -53,13 +52,7 @@ public class MotifRadioButtonUI extends BasicRadioButtonUI {
 	// Create PLAF
 	// ********************************
 	public static ComponentUI createUI(JComponent c) {
-		AppContext appContext = AppContext.getAppContext();
-		MotifRadioButtonUI motifRadioButtonUI = (MotifRadioButtonUI) appContext.get(MOTIF_RADIO_BUTTON_UI_KEY);
-		if(motifRadioButtonUI == null) {
-			motifRadioButtonUI = new MotifRadioButtonUI();
-			appContext.put(MOTIF_RADIO_BUTTON_UI_KEY, motifRadioButtonUI);
-		}
-		return motifRadioButtonUI;
+		return UI;
 	}
 
 	// ********************************

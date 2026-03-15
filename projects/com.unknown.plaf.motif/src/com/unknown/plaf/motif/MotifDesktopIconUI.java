@@ -56,6 +56,7 @@ import javax.swing.plaf.ComponentUI;
 import javax.swing.plaf.basic.BasicDesktopIconUI;
 
 import com.unknown.util.ui.InternalFrame;
+import com.unknown.util.ui.plaf.SwingUtilities2;
 
 /**
  * Motif rendition of the component.

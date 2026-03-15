@@ -23,7 +23,7 @@
  * questions.
  */
 
-package com.unknown.plaf.motif;
+package com.unknown.util.ui.plaf;
 
 /*
  * NB the versions that take a char as an int are used by the opentype

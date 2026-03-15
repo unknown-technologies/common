@@ -63,6 +63,9 @@ import javax.swing.filechooser.FileFilter;
 import javax.swing.plaf.ComponentUI;
 import javax.swing.plaf.basic.BasicFileChooserUI;
 
+import com.unknown.util.ui.plaf.ShellFolder;
+import com.unknown.util.ui.plaf.SwingUtilities2;
+
 /**
  * Motif FileChooserUI.
  *
@@ -320,7 +323,6 @@ public class MotifFileChooserUI extends BasicFileChooserUI {
 		fc.setLayout(new BorderLayout(10, 10));
 		fc.setAlignmentX(JComponent.CENTER_ALIGNMENT);
 
-		@SuppressWarnings("serial") // anonymous class
 		JPanel interior = new JPanel() {
 			@Override
 			public Insets getInsets() {
@@ -345,7 +347,6 @@ public class MotifFileChooserUI extends BasicFileChooserUI {
 			curDirName = currentDirectory.getPath();
 		}
 
-		@SuppressWarnings("serial") // anonymous class
 		JTextField tmp1 = new JTextField(curDirName, 35) {
 			@Override
 			public Dimension getMaximumSize() {
@@ -381,7 +382,6 @@ public class MotifFileChooserUI extends BasicFileChooserUI {
 		align(l);
 		leftPanel.add(l);
 
-		@SuppressWarnings("serial") // anonymous class
 		JComboBox<FileFilter> tmp2 = new JComboBox<>() {
 			@Override
 			public Dimension getMaximumSize() {
@@ -459,7 +459,6 @@ public class MotifFileChooserUI extends BasicFileChooserUI {
 		align(fileNameLabel);
 		interior.add(fileNameLabel);
 
-		@SuppressWarnings("serial") // anonymous class
 		JTextField tmp3 = new JTextField(35) {
 			@Override
 			public Dimension getMaximumSize() {
@@ -485,7 +484,6 @@ public class MotifFileChooserUI extends BasicFileChooserUI {
 		buttonPanel.setLayout(new BoxLayout(buttonPanel, BoxLayout.LINE_AXIS));
 		buttonPanel.add(Box.createGlue());
 
-		@SuppressWarnings("serial") // anonymous class
 		JButton tmp4 = new JButton(getApproveButtonText(fc)) {
 			@Override
 			public Dimension getMaximumSize() {
@@ -502,7 +500,6 @@ public class MotifFileChooserUI extends BasicFileChooserUI {
 		buttonPanel.add(approveButton);
 		buttonPanel.add(Box.createGlue());
 
-		@SuppressWarnings("serial") // anonymous class
 		JButton updateButton = new JButton(updateButtonText) {
 			@Override
 			public Dimension getMaximumSize() {
@@ -518,7 +515,6 @@ public class MotifFileChooserUI extends BasicFileChooserUI {
 		buttonPanel.add(updateButton);
 		buttonPanel.add(Box.createGlue());
 
-		@SuppressWarnings("serial") // anonymous class
 		JButton cancelButton = new JButton(cancelButtonText) {
 			@Override
 			public Dimension getMaximumSize() {
@@ -534,7 +530,6 @@ public class MotifFileChooserUI extends BasicFileChooserUI {
 		buttonPanel.add(cancelButton);
 		buttonPanel.add(Box.createGlue());
 
-		@SuppressWarnings("serial") // anonymous class
 		JButton helpButton = new JButton(helpButtonText) {
 			@Override
 			public Dimension getMaximumSize() {

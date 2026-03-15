@@ -41,6 +41,8 @@ import javax.swing.plaf.basic.BasicBorders;
 import javax.swing.plaf.basic.BasicLookAndFeel;
 import javax.swing.text.DefaultEditorKit;
 
+import com.unknown.util.ui.plaf.SwingUtilities2;
+
 /**
  * Implements the Motif Look and Feel. UI classes not implemented specifically for Motif will default to those
  * implemented in Basic.
@@ -72,6 +74,11 @@ public class MotifLookAndFeel extends BasicLookAndFeel {
 		return true;
 	}
 
+	@Override
+	public boolean getSupportsWindowDecorations() {
+		return true;
+	}
+
 	/**
 	 * Load the SystemColors into the defaults table. The keys for SystemColor defaults are the same as the names of
 	 * the public fields in SystemColor. If the table is being created on a native Motif platform we use the
@@ -80,34 +87,34 @@ public class MotifLookAndFeel extends BasicLookAndFeel {
 	@Override
 	protected void initSystemColorDefaults(UIDefaults table) {
 		// @formatter:off
-        String[] defaultSystemColors = {
-                  "desktop", "#005C5C", /* Color of the desktop background */
-            "activeCaption", "#000080", /* Color for captions (title bars) when they are active. */
-        "activeCaptionText", "#FFFFFF", /* Text color for text in captions (title bars). */
-      "activeCaptionBorder", "#B24D7A", /* Border color for caption (title bar) window borders. */
-          "inactiveCaption", "#AEB2C3", /* Color for captions (title bars) when not active. */
-      "inactiveCaptionText", "#000000", /* Text color for text in inactive captions (title bars). */
-    "inactiveCaptionBorder", "#AEB2C3", /* Border color for inactive caption (title bar) window borders. */
-                   "window", "#AEB2C3", /* Default color for the interior of windows */
-             "windowBorder", "#AEB2C3", /* ??? */
-               "windowText", "#000000", /* ??? */
-                     "menu", "#AEB2C3", /* ??? */
-                 "menuText", "#000000", /* ??? */
-                     "text", "#FFF7E9", /* Text background color */
-                 "textText", "#000000", /* Text foreground color */
-            "textHighlight", "#000000", /* Text background color when selected */
-        "textHighlightText", "#FFF7E9", /* Text color when selected */
-         "textInactiveText", "#808080", /* Text color when disabled */
-                  "control", "#AEB2C3", /* Default color for controls (buttons, sliders, etc) */
-              "controlText", "#000000", /* Default color for text in controls */
-         "controlHighlight", "#DCDEE5", /* Highlight color for controls */
-       "controlLtHighlight", "#DCDEE5", /* Light highlight color for controls */
-            "controlShadow", "#63656F", /* Shadow color for controls */
-       "controlLightShadow", "#9397A5", /* Shadow color for controls */
-          "controlDkShadow", "#000000", /* Dark shadow color for controls */
-                "scrollbar", "#AEB2C3", /* Scrollbar ??? color. PENDING(jeff) foreground? background? ?*/
-                     "info", "#FFF7E9", /* ??? */
-                 "infoText", "#000000"  /* ??? */
+		String[] defaultSystemColors = {
+			  "desktop", "#005C5C", /* Color of the desktop background */
+		    "activeCaption", "#000080", /* Color for captions (title bars) when they are active. */
+		"activeCaptionText", "#FFFFFF", /* Text color for text in captions (title bars). */
+	      "activeCaptionBorder", "#B24D7A", /* Border color for caption (title bar) window borders. */
+		  "inactiveCaption", "#AEB2C3", /* Color for captions (title bars) when not active. */
+	      "inactiveCaptionText", "#000000", /* Text color for text in inactive captions (title bars). */
+	    "inactiveCaptionBorder", "#AEB2C3", /* Border color for inactive caption (title bar) window borders. */
+			   "window", "#AEB2C3", /* Default color for the interior of windows */
+		     "windowBorder", "#AEB2C3", /* ??? */
+		       "windowText", "#000000", /* ??? */
+			     "menu", "#AEB2C3", /* ??? */
+			 "menuText", "#000000", /* ??? */
+			     "text", "#FFF7E9", /* Text background color */
+			 "textText", "#000000", /* Text foreground color */
+		    "textHighlight", "#000000", /* Text background color when selected */
+		"textHighlightText", "#FFF7E9", /* Text color when selected */
+		 "textInactiveText", "#808080", /* Text color when disabled */
+			  "control", "#AEB2C3", /* Default color for controls (buttons, sliders, etc) */
+		      "controlText", "#000000", /* Default color for text in controls */
+		 "controlHighlight", "#DCDEE5", /* Highlight color for controls */
+	       "controlLtHighlight", "#DCDEE5", /* Light highlight color for controls */
+		    "controlShadow", "#63656F", /* Shadow color for controls */
+	       "controlLightShadow", "#9397A5", /* Shadow color for controls */
+		  "controlDkShadow", "#000000", /* Dark shadow color for controls */
+			"scrollbar", "#AEB2C3", /* Scrollbar ??? color. PENDING(jeff) foreground? background? ?*/
+			     "info", "#FFF7E9", /* ??? */
+			 "infoText", "#000000"  /* ??? */
 		// @formatter:on
 		};
 
@@ -120,39 +127,40 @@ public class MotifLookAndFeel extends BasicLookAndFeel {
 		String motifPackageName = "com.unknown.plaf.motif.";
 
 		// @formatter:off
-        Object[] uiDefaults = {
-                   "ButtonUI", motifPackageName + "MotifButtonUI",
-                 "CheckBoxUI", motifPackageName + "MotifCheckBoxUI",
-            "DirectoryPaneUI", motifPackageName + "MotifDirectoryPaneUI",
-              "FileChooserUI", motifPackageName + "MotifFileChooserUI",
-                    "LabelUI", motifPackageName + "MotifLabelUI",
-                  "MenuBarUI", motifPackageName + "MotifMenuBarUI",
-                     "MenuUI", motifPackageName + "MotifMenuUI",
-                 "MenuItemUI", motifPackageName + "MotifMenuItemUI",
-         "CheckBoxMenuItemUI", motifPackageName + "MotifCheckBoxMenuItemUI",
-      "RadioButtonMenuItemUI", motifPackageName + "MotifRadioButtonMenuItemUI",
-              "RadioButtonUI", motifPackageName + "MotifRadioButtonUI",
-             "ToggleButtonUI", motifPackageName + "MotifToggleButtonUI",
-                "PopupMenuUI", motifPackageName + "MotifPopupMenuUI",
-              "ProgressBarUI", motifPackageName + "MotifProgressBarUI",
-                "ScrollBarUI", motifPackageName + "MotifScrollBarUI",
-               "ScrollPaneUI", motifPackageName + "MotifScrollPaneUI",
-                   "SliderUI", motifPackageName + "MotifSliderUI",
-                "SplitPaneUI", motifPackageName + "MotifSplitPaneUI",
-               "TabbedPaneUI", motifPackageName + "MotifTabbedPaneUI",
-                 "TextAreaUI", motifPackageName + "MotifTextAreaUI",
-                "TextFieldUI", motifPackageName + "MotifTextFieldUI",
-            "PasswordFieldUI", motifPackageName + "MotifPasswordFieldUI",
-                 "TextPaneUI", motifPackageName + "MotifTextPaneUI",
-               "EditorPaneUI", motifPackageName + "MotifEditorPaneUI",
-                     "TreeUI", motifPackageName + "MotifTreeUI",
-            "InternalFrameUI", motifPackageName + "MotifInternalFrameUI",
-              "DesktopPaneUI", motifPackageName + "MotifDesktopPaneUI",
-                "SeparatorUI", motifPackageName + "MotifSeparatorUI",
-       "PopupMenuSeparatorUI", motifPackageName + "MotifPopupMenuSeparatorUI",
-               "OptionPaneUI", motifPackageName + "MotifOptionPaneUI",
-                 "ComboBoxUI", motifPackageName + "MotifComboBoxUI",
-              "DesktopIconUI", motifPackageName + "MotifDesktopIconUI"
+		Object[] uiDefaults = {
+			   "ButtonUI", motifPackageName + "MotifButtonUI",
+			 "CheckBoxUI", motifPackageName + "MotifCheckBoxUI",
+		    "DirectoryPaneUI", motifPackageName + "MotifDirectoryPaneUI",
+		      "FileChooserUI", motifPackageName + "MotifFileChooserUI",
+			    "LabelUI", motifPackageName + "MotifLabelUI",
+			  "MenuBarUI", motifPackageName + "MotifMenuBarUI",
+			     "MenuUI", motifPackageName + "MotifMenuUI",
+			 "MenuItemUI", motifPackageName + "MotifMenuItemUI",
+		 "CheckBoxMenuItemUI", motifPackageName + "MotifCheckBoxMenuItemUI",
+	      "RadioButtonMenuItemUI", motifPackageName + "MotifRadioButtonMenuItemUI",
+		      "RadioButtonUI", motifPackageName + "MotifRadioButtonUI",
+		     "ToggleButtonUI", motifPackageName + "MotifToggleButtonUI",
+			"PopupMenuUI", motifPackageName + "MotifPopupMenuUI",
+		      "ProgressBarUI", motifPackageName + "MotifProgressBarUI",
+			"ScrollBarUI", motifPackageName + "MotifScrollBarUI",
+		       "ScrollPaneUI", motifPackageName + "MotifScrollPaneUI",
+			   "SliderUI", motifPackageName + "MotifSliderUI",
+			"SplitPaneUI", motifPackageName + "MotifSplitPaneUI",
+		       "TabbedPaneUI", motifPackageName + "MotifTabbedPaneUI",
+			 "TextAreaUI", motifPackageName + "MotifTextAreaUI",
+			"TextFieldUI", motifPackageName + "MotifTextFieldUI",
+		    "PasswordFieldUI", motifPackageName + "MotifPasswordFieldUI",
+			 "TextPaneUI", motifPackageName + "MotifTextPaneUI",
+		       "EditorPaneUI", motifPackageName + "MotifEditorPaneUI",
+			     "TreeUI", motifPackageName + "MotifTreeUI",
+		    "InternalFrameUI", motifPackageName + "MotifInternalFrameUI",
+		      "DesktopPaneUI", motifPackageName + "MotifDesktopPaneUI",
+			"SeparatorUI", motifPackageName + "MotifSeparatorUI",
+	       "PopupMenuSeparatorUI", motifPackageName + "MotifPopupMenuSeparatorUI",
+		       "OptionPaneUI", motifPackageName + "MotifOptionPaneUI",
+			 "ComboBoxUI", motifPackageName + "MotifComboBoxUI",
+		      "DesktopIconUI", motifPackageName + "MotifDesktopIconUI",
+			 "RootPaneUI", motifPackageName + "MotifRootPaneUI"
 		// @formatter:on
 		};
 
@@ -162,10 +170,10 @@ public class MotifLookAndFeel extends BasicLookAndFeel {
 	/**
 	 * Initialize the defaults table with the name of the ResourceBundle used for getting localized defaults.
 	 */
-	@SuppressWarnings("unused")
-	private void initResourceBundle(UIDefaults table) {
-		// SwingAccessor.getUIDefaultsAccessor() .addInternalBundle(table,
-		// "com.sun.java.swing.plaf.motif.resources.motif");
+	private static void initResourceBundle(UIDefaults table) {
+		table.addResourceBundle("com.unknown.plaf.motif.resources.motif");
+		// SwingAccessor.getUIDefaultsAccessor().addInternalBundle(table,
+		// "com.unknown.plaf.motif.resources.motif");
 	}
 
 	@Override
@@ -519,40 +527,40 @@ public class MotifLookAndFeel extends BasicLookAndFeel {
 				RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_GASP,
 
 				// @formatter:off
-            "Desktop.background", table.get("desktop"),
-            "Desktop.ancestorInputMap",
-               new UIDefaults.LazyInputMap(new Object[] {
-                 "ctrl F5", "restore",
-                 "ctrl F4", "close",
-                 "ctrl F7", "move",
-                 "ctrl F8", "resize",
-                   "RIGHT", "right",
-                "KP_RIGHT", "right",
-             "shift RIGHT", "shrinkRight",
-          "shift KP_RIGHT", "shrinkRight",
-                    "LEFT", "left",
-                 "KP_LEFT", "left",
-              "shift LEFT", "shrinkLeft",
-           "shift KP_LEFT", "shrinkLeft",
-                      "UP", "up",
-                   "KP_UP", "up",
-                "shift UP", "shrinkUp",
-             "shift KP_UP", "shrinkUp",
-                    "DOWN", "down",
-                 "KP_DOWN", "down",
-              "shift DOWN", "shrinkDown",
-           "shift KP_DOWN", "shrinkDown",
-                  "ESCAPE", "escape",
-                 "ctrl F9", "minimize",
-                "ctrl F10", "maximize",
-                 "ctrl F6", "selectNextFrame",
-                "ctrl TAB", "selectNextFrame",
-             "ctrl alt F6", "selectNextFrame",
-       "shift ctrl alt F6", "selectPreviousFrame",
-                "ctrl F12", "navigateNext",
-          "shift ctrl F12", "navigatePrevious"
-              }),
-               // @formatter:on
+			    "Desktop.background", table.get("desktop"),
+			    "Desktop.ancestorInputMap",
+			       new UIDefaults.LazyInputMap(new Object[] {
+				 "ctrl F5", "restore",
+				 "ctrl F4", "close",
+				 "ctrl F7", "move",
+				 "ctrl F8", "resize",
+				   "RIGHT", "right",
+				"KP_RIGHT", "right",
+			     "shift RIGHT", "shrinkRight",
+			  "shift KP_RIGHT", "shrinkRight",
+				    "LEFT", "left",
+				 "KP_LEFT", "left",
+			      "shift LEFT", "shrinkLeft",
+			   "shift KP_LEFT", "shrinkLeft",
+				      "UP", "up",
+				   "KP_UP", "up",
+				"shift UP", "shrinkUp",
+			     "shift KP_UP", "shrinkUp",
+				    "DOWN", "down",
+				 "KP_DOWN", "down",
+			      "shift DOWN", "shrinkDown",
+			   "shift KP_DOWN", "shrinkDown",
+				  "ESCAPE", "escape",
+				 "ctrl F9", "minimize",
+				"ctrl F10", "maximize",
+				 "ctrl F6", "selectNextFrame",
+				"ctrl TAB", "selectNextFrame",
+			     "ctrl alt F6", "selectNextFrame",
+		       "shift ctrl alt F6", "selectPreviousFrame",
+				"ctrl F12", "navigateNext",
+			  "shift ctrl F12", "navigatePrevious"
+			      }),
+				// @formatter:on
 
 				"Panel.background", table.get("control"),
 				"Panel.foreground", table.get("textText"),
@@ -694,69 +702,69 @@ public class MotifLookAndFeel extends BasicLookAndFeel {
 				"List.focusCellHighlightBorder", focusCellHighlightBorder,
 				"List.focusInputMap",
 				// @formatter:off
-               new UIDefaults.LazyInputMap(new Object[] {
-                             "COPY", "copy",
-                            "PASTE", "paste",
-                              "CUT", "cut",
-                   "control INSERT", "copy",
-                     "shift INSERT", "paste",
-                     "shift DELETE", "cut",
-                               "UP", "selectPreviousRow",
-                            "KP_UP", "selectPreviousRow",
-                         "shift UP", "selectPreviousRowExtendSelection",
-                      "shift KP_UP", "selectPreviousRowExtendSelection",
-                    "ctrl shift UP", "selectPreviousRowExtendSelection",
-                 "ctrl shift KP_UP", "selectPreviousRowExtendSelection",
-                          "ctrl UP", "selectPreviousRowChangeLead",
-                       "ctrl KP_UP", "selectPreviousRowChangeLead",
-                             "DOWN", "selectNextRow",
-                          "KP_DOWN", "selectNextRow",
-                       "shift DOWN", "selectNextRowExtendSelection",
-                    "shift KP_DOWN", "selectNextRowExtendSelection",
-                  "ctrl shift DOWN", "selectNextRowExtendSelection",
-               "ctrl shift KP_DOWN", "selectNextRowExtendSelection",
-                        "ctrl DOWN", "selectNextRowChangeLead",
-                     "ctrl KP_DOWN", "selectNextRowChangeLead",
-                             "LEFT", "selectPreviousColumn",
-                          "KP_LEFT", "selectPreviousColumn",
-                       "shift LEFT", "selectPreviousColumnExtendSelection",
-                    "shift KP_LEFT", "selectPreviousColumnExtendSelection",
-                  "ctrl shift LEFT", "selectPreviousColumnExtendSelection",
-               "ctrl shift KP_LEFT", "selectPreviousColumnExtendSelection",
-                        "ctrl LEFT", "selectPreviousColumnChangeLead",
-                     "ctrl KP_LEFT", "selectPreviousColumnChangeLead",
-                            "RIGHT", "selectNextColumn",
-                         "KP_RIGHT", "selectNextColumn",
-                      "shift RIGHT", "selectNextColumnExtendSelection",
-                   "shift KP_RIGHT", "selectNextColumnExtendSelection",
-                 "ctrl shift RIGHT", "selectNextColumnExtendSelection",
-              "ctrl shift KP_RIGHT", "selectNextColumnExtendSelection",
-                       "ctrl RIGHT", "selectNextColumnChangeLead",
-                    "ctrl KP_RIGHT", "selectNextColumnChangeLead",
-                             "HOME", "selectFirstRow",
-                       "shift HOME", "selectFirstRowExtendSelection",
-                  "ctrl shift HOME", "selectFirstRowExtendSelection",
-                        "ctrl HOME", "selectFirstRowChangeLead",
-                              "END", "selectLastRow",
-                        "shift END", "selectLastRowExtendSelection",
-                   "ctrl shift END", "selectLastRowExtendSelection",
-                         "ctrl END", "selectLastRowChangeLead",
-                          "PAGE_UP", "scrollUp",
-                    "shift PAGE_UP", "scrollUpExtendSelection",
-               "ctrl shift PAGE_UP", "scrollUpExtendSelection",
-                     "ctrl PAGE_UP", "scrollUpChangeLead",
-                        "PAGE_DOWN", "scrollDown",
-                  "shift PAGE_DOWN", "scrollDownExtendSelection",
-             "ctrl shift PAGE_DOWN", "scrollDownExtendSelection",
-                   "ctrl PAGE_DOWN", "scrollDownChangeLead",
-                           "ctrl A", "selectAll",
-                       "ctrl SLASH", "selectAll",
-                  "ctrl BACK_SLASH", "clearSelection",
-                            "SPACE", "addToSelection",
-                       "ctrl SPACE", "toggleAndAnchor",
-                      "shift SPACE", "extendTo",
-                 "ctrl shift SPACE", "moveSelectionTo"
-            // @formatter:on
+			       new UIDefaults.LazyInputMap(new Object[] {
+					     "COPY", "copy",
+					    "PASTE", "paste",
+					      "CUT", "cut",
+				   "control INSERT", "copy",
+				     "shift INSERT", "paste",
+				     "shift DELETE", "cut",
+					       "UP", "selectPreviousRow",
+					    "KP_UP", "selectPreviousRow",
+					 "shift UP", "selectPreviousRowExtendSelection",
+				      "shift KP_UP", "selectPreviousRowExtendSelection",
+				    "ctrl shift UP", "selectPreviousRowExtendSelection",
+				 "ctrl shift KP_UP", "selectPreviousRowExtendSelection",
+					  "ctrl UP", "selectPreviousRowChangeLead",
+				       "ctrl KP_UP", "selectPreviousRowChangeLead",
+					     "DOWN", "selectNextRow",
+					  "KP_DOWN", "selectNextRow",
+				       "shift DOWN", "selectNextRowExtendSelection",
+				    "shift KP_DOWN", "selectNextRowExtendSelection",
+				  "ctrl shift DOWN", "selectNextRowExtendSelection",
+			       "ctrl shift KP_DOWN", "selectNextRowExtendSelection",
+					"ctrl DOWN", "selectNextRowChangeLead",
+				     "ctrl KP_DOWN", "selectNextRowChangeLead",
+					     "LEFT", "selectPreviousColumn",
+					  "KP_LEFT", "selectPreviousColumn",
+				       "shift LEFT", "selectPreviousColumnExtendSelection",
+				    "shift KP_LEFT", "selectPreviousColumnExtendSelection",
+				  "ctrl shift LEFT", "selectPreviousColumnExtendSelection",
+			       "ctrl shift KP_LEFT", "selectPreviousColumnExtendSelection",
+					"ctrl LEFT", "selectPreviousColumnChangeLead",
+				     "ctrl KP_LEFT", "selectPreviousColumnChangeLead",
+					    "RIGHT", "selectNextColumn",
+					 "KP_RIGHT", "selectNextColumn",
+				      "shift RIGHT", "selectNextColumnExtendSelection",
+				   "shift KP_RIGHT", "selectNextColumnExtendSelection",
+				 "ctrl shift RIGHT", "selectNextColumnExtendSelection",
+			      "ctrl shift KP_RIGHT", "selectNextColumnExtendSelection",
+				       "ctrl RIGHT", "selectNextColumnChangeLead",
+				    "ctrl KP_RIGHT", "selectNextColumnChangeLead",
+					     "HOME", "selectFirstRow",
+				       "shift HOME", "selectFirstRowExtendSelection",
+				  "ctrl shift HOME", "selectFirstRowExtendSelection",
+					"ctrl HOME", "selectFirstRowChangeLead",
+					      "END", "selectLastRow",
+					"shift END", "selectLastRowExtendSelection",
+				   "ctrl shift END", "selectLastRowExtendSelection",
+					 "ctrl END", "selectLastRowChangeLead",
+					  "PAGE_UP", "scrollUp",
+				    "shift PAGE_UP", "scrollUpExtendSelection",
+			       "ctrl shift PAGE_UP", "scrollUpExtendSelection",
+				     "ctrl PAGE_UP", "scrollUpChangeLead",
+					"PAGE_DOWN", "scrollDown",
+				  "shift PAGE_DOWN", "scrollDownExtendSelection",
+			     "ctrl shift PAGE_DOWN", "scrollDownExtendSelection",
+				   "ctrl PAGE_DOWN", "scrollDownChangeLead",
+					   "ctrl A", "selectAll",
+				       "ctrl SLASH", "selectAll",
+				  "ctrl BACK_SLASH", "clearSelection",
+					    "SPACE", "addToSelection",
+				       "ctrl SPACE", "toggleAndAnchor",
+				      "shift SPACE", "extendTo",
+				 "ctrl shift SPACE", "moveSelectionTo"
+			    // @formatter:on
 				}),
 
 				"DesktopIcon.icon", SwingUtilities2.makeIcon(getClass(),
@@ -786,23 +794,23 @@ public class MotifLookAndFeel extends BasicLookAndFeel {
 				"ScrollBar.allowsAbsolutePositioning", Boolean.TRUE,
 				"ScrollBar.ancestorInputMap",
 				// @formatter:off
-               new UIDefaults.LazyInputMap(new Object[] {
-                       "RIGHT", "positiveUnitIncrement",
-                    "KP_RIGHT", "positiveUnitIncrement",
-                        "DOWN", "positiveUnitIncrement",
-                     "KP_DOWN", "positiveUnitIncrement",
-                   "PAGE_DOWN", "positiveBlockIncrement",
-              "ctrl PAGE_DOWN", "positiveBlockIncrement",
-                        "LEFT", "negativeUnitIncrement",
-                     "KP_LEFT", "negativeUnitIncrement",
-                          "UP", "negativeUnitIncrement",
-                       "KP_UP", "negativeUnitIncrement",
-                     "PAGE_UP", "negativeBlockIncrement",
-                "ctrl PAGE_UP", "negativeBlockIncrement",
-                        "HOME", "minScroll",
-                         "END", "maxScroll"
-                 }),
-            // @formatter:on
+			       new UIDefaults.LazyInputMap(new Object[] {
+				       "RIGHT", "positiveUnitIncrement",
+				    "KP_RIGHT", "positiveUnitIncrement",
+					"DOWN", "positiveUnitIncrement",
+				     "KP_DOWN", "positiveUnitIncrement",
+				   "PAGE_DOWN", "positiveBlockIncrement",
+			      "ctrl PAGE_DOWN", "positiveBlockIncrement",
+					"LEFT", "negativeUnitIncrement",
+				     "KP_LEFT", "negativeUnitIncrement",
+					  "UP", "negativeUnitIncrement",
+				       "KP_UP", "negativeUnitIncrement",
+				     "PAGE_UP", "negativeBlockIncrement",
+				"ctrl PAGE_UP", "negativeBlockIncrement",
+					"HOME", "minScroll",
+					 "END", "maxScroll"
+				 }),
+			    // @formatter:on
 
 				"ScrollPane.font", dialogPlain12,
 				"ScrollPane.background", table.get("control"),
@@ -811,23 +819,23 @@ public class MotifLookAndFeel extends BasicLookAndFeel {
 				"ScrollPane.viewportBorder", loweredBevelBorder,
 				"ScrollPane.ancestorInputMap",
 				// @formatter:off
-               new UIDefaults.LazyInputMap(new Object[] {
-                           "RIGHT", "unitScrollRight",
-                        "KP_RIGHT", "unitScrollRight",
-                            "DOWN", "unitScrollDown",
-                         "KP_DOWN", "unitScrollDown",
-                            "LEFT", "unitScrollLeft",
-                         "KP_LEFT", "unitScrollLeft",
-                              "UP", "unitScrollUp",
-                           "KP_UP", "unitScrollUp",
-                         "PAGE_UP", "scrollUp",
-                       "PAGE_DOWN", "scrollDown",
-                    "ctrl PAGE_UP", "scrollLeft",
-                  "ctrl PAGE_DOWN", "scrollRight",
-                       "ctrl HOME", "scrollHome",
-                        "ctrl END", "scrollEnd"
-                 }),
-            // @formatter:on
+			       new UIDefaults.LazyInputMap(new Object[] {
+					   "RIGHT", "unitScrollRight",
+					"KP_RIGHT", "unitScrollRight",
+					    "DOWN", "unitScrollDown",
+					 "KP_DOWN", "unitScrollDown",
+					    "LEFT", "unitScrollLeft",
+					 "KP_LEFT", "unitScrollLeft",
+					      "UP", "unitScrollUp",
+					   "KP_UP", "unitScrollUp",
+					 "PAGE_UP", "scrollUp",
+				       "PAGE_DOWN", "scrollDown",
+				    "ctrl PAGE_UP", "scrollLeft",
+				  "ctrl PAGE_DOWN", "scrollRight",
+				       "ctrl HOME", "scrollHome",
+					"ctrl END", "scrollEnd"
+				 }),
+			    // @formatter:on
 
 				"Slider.font", dialogPlain12,
 				"Slider.border", focusBevelBorder,
@@ -838,32 +846,32 @@ public class MotifLookAndFeel extends BasicLookAndFeel {
 				"Slider.focus", table.get("controlDkShadow"),
 				"Slider.focusInsets", sliderFocusInsets,
 				// @formatter:off
-            "Slider.focusInputMap", new UIDefaults.LazyInputMap(new Object[] {
-                         "RIGHT", "positiveUnitIncrement",
-                      "KP_RIGHT", "positiveUnitIncrement",
-                          "DOWN", "negativeUnitIncrement",
-                       "KP_DOWN", "negativeUnitIncrement",
-                "ctrl PAGE_DOWN", "negativeBlockIncrement",
-                          "LEFT", "negativeUnitIncrement",
-                       "KP_LEFT", "negativeUnitIncrement",
-                            "UP", "positiveUnitIncrement",
-                         "KP_UP", "positiveUnitIncrement",
-                  "ctrl PAGE_UP", "positiveBlockIncrement",
-                          "HOME", "minScroll",
-                           "END", "maxScroll"
-            }),
-            // @formatter:on
+			    "Slider.focusInputMap", new UIDefaults.LazyInputMap(new Object[] {
+					 "RIGHT", "positiveUnitIncrement",
+				      "KP_RIGHT", "positiveUnitIncrement",
+					  "DOWN", "negativeUnitIncrement",
+				       "KP_DOWN", "negativeUnitIncrement",
+				"ctrl PAGE_DOWN", "negativeBlockIncrement",
+					  "LEFT", "negativeUnitIncrement",
+				       "KP_LEFT", "negativeUnitIncrement",
+					    "UP", "positiveUnitIncrement",
+					 "KP_UP", "positiveUnitIncrement",
+				  "ctrl PAGE_UP", "positiveBlockIncrement",
+					  "HOME", "minScroll",
+					   "END", "maxScroll"
+			    }),
+			    // @formatter:on
 
 				// Spinner
 				"Spinner.ancestorInputMap",
 				// @formatter:off
-               new UIDefaults.LazyInputMap(new Object[] {
-                               "UP", "increment",
-                            "KP_UP", "increment",
-                             "DOWN", "decrement",
-                          "KP_DOWN", "decrement",
-               }),
-            // @formatter:on
+			       new UIDefaults.LazyInputMap(new Object[] {
+					       "UP", "increment",
+					    "KP_UP", "increment",
+					     "DOWN", "decrement",
+					  "KP_DOWN", "decrement",
+			       }),
+			    // @formatter:on
 				"Spinner.border", textFieldBorder,
 
 				"SplitPane.background", table.get("control"),
@@ -873,22 +881,22 @@ public class MotifLookAndFeel extends BasicLookAndFeel {
 				"SplitPane.activeThumb", table.get("activeCaptionBorder"),
 				"SplitPane.ancestorInputMap",
 				// @formatter:off
-               new UIDefaults.LazyInputMap(new Object[] {
-                        "UP", "negativeIncrement",
-                      "DOWN", "positiveIncrement",
-                      "LEFT", "negativeIncrement",
-                     "RIGHT", "positiveIncrement",
-                     "KP_UP", "negativeIncrement",
-                   "KP_DOWN", "positiveIncrement",
-                   "KP_LEFT", "negativeIncrement",
-                  "KP_RIGHT", "positiveIncrement",
-                      "HOME", "selectMin",
-                       "END", "selectMax",
-                        "F8", "startResize",
-                        "F6", "toggleFocus",
-                  "ctrl TAB", "focusOutForward",
-            "ctrl shift TAB", "focusOutBackward"
-            // @formatter:on
+			       new UIDefaults.LazyInputMap(new Object[] {
+					"UP", "negativeIncrement",
+				      "DOWN", "positiveIncrement",
+				      "LEFT", "negativeIncrement",
+				     "RIGHT", "positiveIncrement",
+				     "KP_UP", "negativeIncrement",
+				   "KP_DOWN", "positiveIncrement",
+				   "KP_LEFT", "negativeIncrement",
+				  "KP_RIGHT", "positiveIncrement",
+				      "HOME", "selectMin",
+				       "END", "selectMax",
+					"F8", "startResize",
+					"F6", "toggleFocus",
+				  "ctrl TAB", "focusOutForward",
+			    "ctrl shift TAB", "focusOutBackward"
+			    // @formatter:on
 				}),
 
 				"TabbedPane.font", dialogPlain12,
@@ -909,28 +917,28 @@ public class MotifLookAndFeel extends BasicLookAndFeel {
 				"TabbedPane.contentBorderInsets", tabbedPaneContentBorderInsets,
 				"TabbedPane.focusInputMap",
 				// @formatter:off
-              new UIDefaults.LazyInputMap(new Object[] {
-                         "RIGHT", "navigateRight",
-                      "KP_RIGHT", "navigateRight",
-                          "LEFT", "navigateLeft",
-                       "KP_LEFT", "navigateLeft",
-                            "UP", "navigateUp",
-                         "KP_UP", "navigateUp",
-                          "DOWN", "navigateDown",
-                       "KP_DOWN", "navigateDown",
-                     "ctrl DOWN", "requestFocusForVisibleComponent",
-                  "ctrl KP_DOWN", "requestFocusForVisibleComponent",
-                }),
-            // @formatter:on
+			      new UIDefaults.LazyInputMap(new Object[] {
+					 "RIGHT", "navigateRight",
+				      "KP_RIGHT", "navigateRight",
+					  "LEFT", "navigateLeft",
+				       "KP_LEFT", "navigateLeft",
+					    "UP", "navigateUp",
+					 "KP_UP", "navigateUp",
+					  "DOWN", "navigateDown",
+				       "KP_DOWN", "navigateDown",
+				     "ctrl DOWN", "requestFocusForVisibleComponent",
+				  "ctrl KP_DOWN", "requestFocusForVisibleComponent",
+				}),
+			    // @formatter:on
 				"TabbedPane.ancestorInputMap",
 				// @formatter:off
-               new UIDefaults.LazyInputMap(new Object[] {
-                   "ctrl PAGE_DOWN", "navigatePageDown",
-                     "ctrl PAGE_UP", "navigatePageUp",
-                          "ctrl UP", "requestFocus",
-                       "ctrl KP_UP", "requestFocus",
-                 }),
-            // @formatter:on
+			       new UIDefaults.LazyInputMap(new Object[] {
+				   "ctrl PAGE_DOWN", "navigatePageDown",
+				     "ctrl PAGE_UP", "navigatePageUp",
+					  "ctrl UP", "requestFocus",
+				       "ctrl KP_UP", "requestFocus",
+				 }),
+			    // @formatter:on
 
 				"Tree.background", controlDarker,                              // default: dark slate
 									                              // blue
@@ -1144,17 +1152,17 @@ public class MotifLookAndFeel extends BasicLookAndFeel {
 				// ToolBar.
 				"ToolBar.ancestorInputMap",
 				// @formatter:off
-               new UIDefaults.LazyInputMap(new Object[] {
-                        "UP", "navigateUp",
-                     "KP_UP", "navigateUp",
-                      "DOWN", "navigateDown",
-                   "KP_DOWN", "navigateDown",
-                      "LEFT", "navigateLeft",
-                   "KP_LEFT", "navigateLeft",
-                     "RIGHT", "navigateRight",
-                  "KP_RIGHT", "navigateRight"
-                 }),
-            // @formatter:on
+			       new UIDefaults.LazyInputMap(new Object[] {
+					"UP", "navigateUp",
+				     "KP_UP", "navigateUp",
+				      "DOWN", "navigateDown",
+				   "KP_DOWN", "navigateDown",
+				      "LEFT", "navigateLeft",
+				   "KP_LEFT", "navigateLeft",
+				     "RIGHT", "navigateRight",
+				  "KP_RIGHT", "navigateRight"
+				 }),
+			    // @formatter:on
 
 				"ComboBox.control", table.get("control"),
 				"ComboBox.controlForeground", black,
@@ -1167,20 +1175,20 @@ public class MotifLookAndFeel extends BasicLookAndFeel {
 				"ComboBox.disabledForeground", table.get("textInactiveText"),
 				"ComboBox.font", dialogPlain12,
 				// @formatter:off
-            "ComboBox.ancestorInputMap", new UIDefaults.LazyInputMap(new Object[] {
-                   "ESCAPE", "hidePopup",
-                  "PAGE_UP", "pageUpPassThrough",
-                "PAGE_DOWN", "pageDownPassThrough",
-                     "HOME", "homePassThrough",
-                      "END", "endPassThrough",
-                     "DOWN", "selectNext",
-                  "KP_DOWN", "selectNext",
-                       "UP", "selectPrevious",
-                    "KP_UP", "selectPrevious",
-                    "SPACE", "spacePopup",
-                    "ENTER", "enterPressed"
-              }),
-            // @formatter:on
+			    "ComboBox.ancestorInputMap", new UIDefaults.LazyInputMap(new Object[] {
+				   "ESCAPE", "hidePopup",
+				  "PAGE_UP", "pageUpPassThrough",
+				"PAGE_DOWN", "pageDownPassThrough",
+				     "HOME", "homePassThrough",
+				      "END", "endPassThrough",
+				     "DOWN", "selectNext",
+				  "KP_DOWN", "selectNext",
+				       "UP", "selectPrevious",
+				    "KP_UP", "selectPrevious",
+				    "SPACE", "spacePopup",
+				    "ENTER", "enterPressed"
+			      }),
+			    // @formatter:on
 
 				"TextField.caretForeground", black,
 				"TextField.caretBlinkRate", Integer.valueOf(500),
@@ -1249,23 +1257,23 @@ public class MotifLookAndFeel extends BasicLookAndFeel {
 				// These window InputMap bindings are used when the Menu is
 				// selected.
 				// @formatter:off
-            "PopupMenu.selectedWindowInputMapBindings", new Object[] {
-                  "ESCAPE", "cancel",
-                     "TAB", "cancel",
-               "shift TAB", "cancel",
-                    "DOWN", "selectNext",
-                 "KP_DOWN", "selectNext",
-                      "UP", "selectPrevious",
-                   "KP_UP", "selectPrevious",
-                    "LEFT", "selectParent",
-                 "KP_LEFT", "selectParent",
-                   "RIGHT", "selectChild",
-                "KP_RIGHT", "selectChild",
-                   "ENTER", "return",
-                   "ctrl ENTER", "return",
-                   "SPACE", "return"
-            },
-            // @formatter:on
+			    "PopupMenu.selectedWindowInputMapBindings", new Object[] {
+				  "ESCAPE", "cancel",
+				     "TAB", "cancel",
+			       "shift TAB", "cancel",
+				    "DOWN", "selectNext",
+				 "KP_DOWN", "selectNext",
+				      "UP", "selectPrevious",
+				   "KP_UP", "selectPrevious",
+				    "LEFT", "selectParent",
+				 "KP_LEFT", "selectParent",
+				   "RIGHT", "selectChild",
+				"KP_RIGHT", "selectChild",
+				   "ENTER", "return",
+				   "ctrl ENTER", "return",
+				   "SPACE", "return"
+			    },
+			    // @formatter:on
 
 				"OptionPane.border", optionPaneBorder,
 				"OptionPane.messageAreaBorder", optionPaneMessageAreaBorder,
@@ -1288,16 +1296,15 @@ public class MotifLookAndFeel extends BasicLookAndFeel {
 				// These bindings are only enabled when there is a default
 				// button set on the rootpane.
 				// @formatter:off
-            "RootPane.defaultButtonWindowKeyBindings", new Object[] {
-                             "ENTER", "press",
-                    "released ENTER", "release",
-                        "ctrl ENTER", "press",
-               "ctrl released ENTER", "release"
-              }
-            // @formatter:on
+			    "RootPane.defaultButtonWindowKeyBindings", new Object[] {
+					     "ENTER", "press",
+				    "released ENTER", "release",
+					"ctrl ENTER", "press",
+			       "ctrl released ENTER", "release"
+			      }
+			    // @formatter:on
 		};
 
 		table.putDefaults(defaults);
 	}
-
 }

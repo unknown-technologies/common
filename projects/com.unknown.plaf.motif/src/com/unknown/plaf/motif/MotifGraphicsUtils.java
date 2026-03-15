@@ -32,6 +32,8 @@ import java.awt.Graphics;
 import javax.swing.JComponent;
 import javax.swing.SwingConstants;
 
+import com.unknown.util.ui.plaf.SwingUtilities2;
+
 /*
  * @author Jeff Dinkins
  * @author Dave Kloba
