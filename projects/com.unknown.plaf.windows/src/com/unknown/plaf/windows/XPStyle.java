@@ -80,9 +80,7 @@ import com.unknown.plaf.windows.TMSchema.Part;
 import com.unknown.plaf.windows.TMSchema.Prop;
 import com.unknown.plaf.windows.TMSchema.State;
 import com.unknown.plaf.windows.TMSchema.TypeEnum;
-
-import sun.awt.image.SunWritableRaster;
-import sun.swing.CachedPainter;
+import com.unknown.util.ui.plaf.CachedPainter;
 
 /**
  * Implements Windows XP Styles for the Windows Look and Feel.
@@ -277,7 +275,7 @@ final class XPStyle {
 				// instead.
 				return new XPFillBorder(UIManager.getColor("InternalFrame.borderShadow"), 1);
 			} else {
-				return null;    // Will cause L&F to use classic border
+				return null; // Will cause L&F to use classic border
 			}
 		}
 		Skin skin = new Skin(c, part, null);
@@ -721,10 +719,9 @@ final class XPStyle {
 			DataBufferInt dbi = (DataBufferInt) raster.getDataBuffer();
 			// Note that stealData() requires a markDirty() afterwards
 			// since we modify the data in it.
-			ThemeReader.paintBackground(SunWritableRaster.stealData(dbi, 0), part.getControlName(comp),
+			ThemeReader.paintBackground(dbi.getData(), part.getControlName(comp),
 					part.getValue(), State.getValue(part, state), 0, 0, w, h, w, dpi);
-
-			SunWritableRaster.markDirty(dbi);
+			// SunWritableRaster.markDirty(dbi);
 		}
 
 		@Override

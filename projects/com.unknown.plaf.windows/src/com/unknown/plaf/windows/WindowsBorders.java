@@ -25,17 +25,18 @@
 
 package com.unknown.plaf.windows;
 
-import static com.unknown.plaf.windows.TMSchema.*;
-
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Graphics;
 import java.awt.Insets;
+import java.awt.Window;
 
 import javax.swing.BorderFactory;
 import javax.swing.JInternalFrame;
+import javax.swing.JRootPane;
 import javax.swing.JToolBar;
 import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
 import javax.swing.UIDefaults;
 import javax.swing.UIManager;
 import javax.swing.border.AbstractBorder;
@@ -49,6 +50,7 @@ import javax.swing.plaf.basic.BasicBorders;
 import javax.swing.plaf.basic.BasicGraphicsUtils;
 
 import com.unknown.plaf.windows.TMSchema.Part;
+import com.unknown.plaf.windows.TMSchema.State;
 import com.unknown.plaf.windows.XPStyle.Skin;
 
 /**
@@ -124,6 +126,17 @@ public final class WindowsBorders {
 						table.getInt("InternalFrame.borderWidth")));
 
 		return internalFrameBorder;
+	}
+
+	public static Border getRootPaneBorder() {
+		UIDefaults table = UIManager.getLookAndFeelDefaults();
+		Border rootPaneBorder = new BorderUIResource(BorderFactory.createBevelBorder(BevelBorder.RAISED,
+				table.getColor("InternalFrame.borderColor"),
+				table.getColor("InternalFrame.borderHighlight"),
+				table.getColor("InternalFrame.borderDarkShadow"),
+				table.getColor("InternalFrame.borderShadow")));
+
+		return rootPaneBorder;
 	}
 
 	@SuppressWarnings("serial") // Superclass is not serializable across versions
@@ -321,23 +334,18 @@ public final class WindowsBorders {
 	 * @since 1.4
 	 */
 	@SuppressWarnings("serial") // Superclass is not serializable across versions
-	public static final class InternalFrameLineBorder extends LineBorder implements
-			UIResource {
+	public static final class InternalFrameLineBorder extends LineBorder implements UIResource {
 		protected Color activeColor;
 		protected Color inactiveColor;
 
-		public InternalFrameLineBorder(Color activeBorderColor,
-				Color inactiveBorderColor,
-				int thickness) {
+		public InternalFrameLineBorder(Color activeBorderColor, Color inactiveBorderColor, int thickness) {
 			super(activeBorderColor, thickness);
 			activeColor = activeBorderColor;
 			inactiveColor = inactiveBorderColor;
 		}
 
 		@Override
-		public void paintBorder(Component c, Graphics g, int x, int y,
-				int width, int height) {
-
+		public void paintBorder(Component c, Graphics g, int x, int y, int width, int height) {
 			JInternalFrame jif = null;
 			if(c instanceof JInternalFrame) {
 				jif = (JInternalFrame) c;
@@ -348,6 +356,52 @@ public final class WindowsBorders {
 			}
 
 			if(jif.isSelected()) {
+				// Set the line color so the line border gets the correct
+				// color.
+				lineColor = activeColor;
+				super.paintBorder(c, g, x, y, width, height);
+			} else {
+				lineColor = inactiveColor;
+				super.paintBorder(c, g, x, y, width, height);
+			}
+		}
+	}
+
+	@SuppressWarnings("serial") // Superclass is not serializable across versions
+	public static final class RootPaneBorder extends LineBorder implements UIResource {
+		protected Color activeColor;
+		protected Color inactiveColor;
+		private JRootPane root;
+		private Window window;
+
+		public RootPaneBorder(JRootPane root, Color activeBorderColor, Color inactiveBorderColor,
+				int thickness) {
+			super(activeBorderColor, thickness);
+			this.root = root;
+			activeColor = activeBorderColor;
+			inactiveColor = inactiveBorderColor;
+		}
+
+		public void setRoot(JRootPane root) {
+			this.root = root;
+		}
+
+		public JRootPane getRoot() {
+			return root;
+		}
+
+		private Window getWindow() {
+			if(window == null) {
+				window = SwingUtilities.getWindowAncestor(root);
+			}
+			return window;
+		}
+
+		@Override
+		public void paintBorder(Component c, Graphics g, int x, int y, int width, int height) {
+			Window win = getWindow();
+
+			if(win.isActive()) {
 				// Set the line color so the line border gets the correct
 				// color.
 				lineColor = activeColor;

@@ -113,17 +113,14 @@ public final class WindowsInternalFrameUI extends BasicInternalFrameUI {
 			State state = ((JInternalFrame) c).isSelected() ? State.ACTIVE : State.INACTIVE;
 			int topBorderHeight = (titlePane != null) ? titlePane.getSize().height : 0;
 
-			bottomSkin.paintSkin(g, 0, height - bottomSkin.getHeight(),
-					width, bottomSkin.getHeight(),
+			bottomSkin.paintSkin(g, 0, height - bottomSkin.getHeight(), width, bottomSkin.getHeight(),
 					state);
 
-			leftSkin.paintSkin(g, 0, topBorderHeight - 1,
-					leftSkin.getWidth(), height - topBorderHeight - bottomSkin.getHeight() + 2,
-					state);
+			leftSkin.paintSkin(g, 0, topBorderHeight - 1, leftSkin.getWidth(),
+					height - topBorderHeight - bottomSkin.getHeight() + 2, state);
 
-			rightSkin.paintSkin(g, width - rightSkin.getWidth(), topBorderHeight - 1,
-					rightSkin.getWidth(), height - topBorderHeight - bottomSkin.getHeight() + 2,
-					state);
+			rightSkin.paintSkin(g, width - rightSkin.getWidth(), topBorderHeight - 1, rightSkin.getWidth(),
+					height - topBorderHeight - bottomSkin.getHeight() + 2, state);
 
 		}
 

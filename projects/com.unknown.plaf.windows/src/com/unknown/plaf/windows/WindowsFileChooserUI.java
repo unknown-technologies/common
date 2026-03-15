@@ -94,8 +94,7 @@ import javax.swing.plaf.basic.BasicFileChooserUI;
 import com.unknown.util.ui.plaf.FilePane;
 import com.unknown.util.ui.plaf.ShellFolder;
 import com.unknown.util.ui.plaf.SwingUtilities2;
-
-import sun.swing.WindowsPlacesBar;
+import com.unknown.util.ui.plaf.WindowsPlacesBar;
 
 /**
  * Windows {@literal L&F} implementation of a FileChooser.
