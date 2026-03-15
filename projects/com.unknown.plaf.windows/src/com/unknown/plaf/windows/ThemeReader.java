@@ -1,0 +1,66 @@
+package com.unknown.plaf.windows;
+
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Insets;
+
+@SuppressWarnings("unused")
+public class ThemeReader {
+	public static int getInt(String widget, int part, int state, int property) {
+		return 0;
+	}
+
+	public static boolean isXPStyleEnabled() {
+		return false;
+	}
+
+	public static boolean isThemed() {
+		return false;
+	}
+
+	public static Dimension getPosition(String widget, int part, int state, int property) {
+		return new Dimension(0, 0);
+	}
+
+	public static int getEnum(String widget, int part, int state, int property) {
+		return 0;
+	}
+
+	public static Color getColor(String widget, int part, int state, int property) {
+		return null;
+	}
+
+	public static Insets getThemeMargins(String widget, int part, int state, int marginType) {
+		return null;
+	}
+
+	public static long getThemeTransitionDuration(String widget, int part, int stateFrom, int stateTo, int propId) {
+		return 0;
+	}
+
+	public static Insets getThemeBackgroundContentMargins(String widget, int part, int state, int boundingWidth,
+			int boundingHeight) {
+		return null;
+	}
+
+	public static boolean isThemePartDefined(String widget, int part, int state) {
+		return false;
+	}
+
+	public static boolean getBoolean(String widget, int part, int state, int property) {
+		return false;
+	}
+
+	public static boolean getSysBoolean(String widget, int property) {
+		return false;
+	}
+
+	public static Dimension getPartSize(String widget, int part, int state) {
+		return null;
+	}
+
+	public static void paintBackground(int[] buffer, String widget, int part, int state, int x, int y, int w, int h,
+			int stride, int dpi) {
+
+	}
+}

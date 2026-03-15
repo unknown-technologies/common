@@ -132,7 +132,48 @@ suite = {
       "license" : "GPLv3",
     },
 
+    "com.unknown.platform" : {
+      "subDir" : "projects",
+      "sourceDirs" : ["src"],
+      "jniHeaders" : True,
+      "dependencies" : [
+        "com.unknown.util"
+      ],
+      "javaCompliance" : "21+",
+      "workingSets" : "common",
+      "license" : "GPLv3",
+    },
+
+    "com.unknown.platform.native" : {
+      "subDir" : "projects",
+      "native" : True,
+      "vpath" : True,
+      "results" : [
+        "bin/<lib:platform>",
+      ],
+      "buildDependencies" : [
+        "com.unknown.platform",
+      ],
+      "buildEnv" : {
+        "CFLAGS" : "-I<jnigen:com.unknown.platform>",
+        "LIBSERIAL" : "<lib:platform>",
+        "OS" : "<os>",
+        "ARCH" : "<arch>"
+      },
+    },
+
     "com.unknown.plaf.motif" : {
+      "subDir" : "projects",
+      "sourceDirs" : ["src"],
+      "dependencies" : [
+        "com.unknown.util"
+      ],
+      "javaCompliance" : "21+",
+      "workingSets" : "common",
+      "license" : "GPLv3",
+    },
+
+    "com.unknown.plaf.windows" : {
       "subDir" : "projects",
       "sourceDirs" : ["src"],
       "dependencies" : [
@@ -312,6 +353,27 @@ suite = {
       ]
     },
 
+    "PLATFORM" : {
+      "path" : "build/platform.jar",
+      "subDir" : "common",
+      "sourcesPath" : "build/platform.src.zip",
+      "dependencies" : [
+        "com.unknown.platform"
+      ],
+      "distDependencies" : [
+        "CORE"
+      ]
+    },
+
+    "PLATFORM_NATIVE" : {
+      "native" : True,
+      "platformDependent" : True,
+      "output" : "build",
+      "dependencies" : [
+        "com.unknown.platform.native"
+      ],
+    },
+
     "DB" : {
       "path" : "build/db.jar",
       "subDir" : "common",
@@ -330,6 +392,18 @@ suite = {
       "sourcesPath" : "build/motif.src.zip",
       "dependencies" : [
         "com.unknown.plaf.motif"
+      ],
+      "distDependencies" : [
+        "CORE"
+      ]
+    },
+
+    "WINDOWS" : {
+      "path" : "build/windows.jar",
+      "subDir" : "common",
+      "sourcesPath" : "build/windows.src.zip",
+      "dependencies" : [
+        "com.unknown.plaf.windows"
       ],
       "distDependencies" : [
         "CORE"
