@@ -63,7 +63,6 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.BorderFactory;
 import javax.swing.Icon;
-import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JRootPane;
 import javax.swing.JTextField;
@@ -2023,7 +2022,7 @@ public class WindowsLookAndFeel extends BasicLookAndFeel {
 			if(nativeImage != null) {
 				Image image = (Image) ShellFolder.get(nativeImage);
 				if(image != null) {
-					return new ImageIcon(image);
+					return new ImageIconUIResource(image);
 				}
 			}
 			UIDefaults.LazyValue fallback = (UIDefaults.LazyValue) SwingUtilities2.makeIcon(getClass(),
