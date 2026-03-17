@@ -4,7 +4,9 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
+import java.net.SocketException;
 import java.net.SocketTimeoutException;
+import java.nio.channels.AsynchronousCloseException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -65,6 +67,14 @@ public class ShowNET implements AutoCloseable {
 
 					try {
 						discoverySocket.send(discovery);
+					} catch(SocketException e) {
+						if(e.getCause() != null &&
+								e.getCause() instanceof AsynchronousCloseException) {
+							return;
+						} else {
+							log.log(Levels.ERROR, "Failed to receive discovery packet: " +
+									e.getMessage(), e);
+						}
 					} catch(IOException e) {
 						log.log(Levels.ERROR, "Failed to send discovery packet: " +
 								e.getMessage(), e);
@@ -120,6 +130,16 @@ public class ShowNET implements AutoCloseable {
 									}
 								}
 							}
+						} catch(SocketException e) {
+							if(e.getCause() != null &&
+									e.getCause() instanceof AsynchronousCloseException) {
+								return;
+							} else {
+								log.log(Levels.ERROR,
+										"Failed to receive discovery packet: " +
+												e.getMessage(),
+										e);
+							}
 						} catch(IOException e) {
 							log.log(Levels.ERROR, "Failed to receive discovery packet: " +
 									e.getMessage(), e);
@@ -152,6 +172,16 @@ public class ShowNET implements AutoCloseable {
 					} catch(SocketTimeoutException e) {
 						// clean up laser response queue
 						packetCleanup();
+					} catch(SocketException e) {
+						if(e.getCause() != null &&
+								e.getCause() instanceof AsynchronousCloseException) {
+							return;
+						} else {
+							log.log(Levels.ERROR,
+									"Failed to receive laser response packet: " +
+											e.getMessage(),
+									e);
+						}
 					} catch(IOException e) {
 						log.log(Levels.ERROR, "Failed to receive laser response packet: " +
 								e.getMessage(), e);
