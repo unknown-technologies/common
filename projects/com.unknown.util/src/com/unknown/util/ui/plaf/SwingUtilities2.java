@@ -1280,9 +1280,7 @@ public class SwingUtilities2 {
 	 * @return a lazy value that creates the {@code ImageIcon} {@code UIResource} for the image, or null if it
 	 *         cannot be found
 	 */
-	public static Object makeIcon(final Class<?> baseClass,
-			final Class<?> rootClass,
-			final String imageFile) {
+	public static Object makeIcon(final Class<?> baseClass, final Class<?> rootClass, final String imageFile) {
 		return (UIDefaults.LazyValue) (table) -> {
 			byte[] buffer = getIconBytes(baseClass, rootClass, imageFile);
 
@@ -1307,7 +1305,6 @@ public class SwingUtilities2 {
 		Class<?> srchClass = baseClass;
 
 		while(srchClass != null) {
-
 			try(InputStream resource = srchClass.getResourceAsStream(imageFile)) {
 				if(resource == null) {
 					if(srchClass == rootClass) {

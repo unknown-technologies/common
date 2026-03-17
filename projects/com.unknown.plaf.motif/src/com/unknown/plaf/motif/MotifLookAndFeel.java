@@ -459,12 +459,10 @@ public class MotifLookAndFeel extends BasicLookAndFeel {
 
 		// *** Tree
 
-		Object treeOpenIcon = SwingUtilities2.makeIcon(getClass(),
-				MotifLookAndFeel.class,
+		Object treeOpenIcon = SwingUtilities2.makeIcon(getClass(), MotifLookAndFeel.class,
 				"icons/TreeOpen.gif");
 
-		Object treeClosedIcon = SwingUtilities2.makeIcon(getClass(),
-				MotifLookAndFeel.class,
+		Object treeClosedIcon = SwingUtilities2.makeIcon(getClass(), MotifLookAndFeel.class,
 				"icons/TreeClosed.gif");
 
 		Object treeLeafIcon = new UIDefaults.LazyValue() {

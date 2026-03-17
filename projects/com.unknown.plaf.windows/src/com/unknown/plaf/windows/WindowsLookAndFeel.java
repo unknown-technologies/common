@@ -2026,9 +2026,9 @@ public class WindowsLookAndFeel extends BasicLookAndFeel {
 					return new ImageIcon(image);
 				}
 			}
-			return SwingUtilities2.makeIcon(getClass(),
-					WindowsLookAndFeel.class,
-					resource);
+			UIDefaults.LazyValue fallback = (UIDefaults.LazyValue) SwingUtilities2.makeIcon(getClass(),
+					WindowsLookAndFeel.class, resource);
+			return fallback.createValue(table);
 		}
 	}
 
@@ -2042,8 +2042,7 @@ public class WindowsLookAndFeel extends BasicLookAndFeel {
 		private String fallbackName;
 		@SuppressWarnings("unused") private WindowsDesktopProperty desktopProperty;
 
-		ActiveWindowsIcon(String desktopPropertyName,
-				String nativeImageName, String fallbackName) {
+		ActiveWindowsIcon(String desktopPropertyName, String nativeImageName, String fallbackName) {
 			this.nativeImageName = nativeImageName;
 			this.fallbackName = fallbackName;
 
