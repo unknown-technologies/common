@@ -1,0 +1,107 @@
+/*
+ * Copyright (c) 1997, 2025, Oracle and/or its affiliates. All rights reserved.
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+ *
+ * This code is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License version 2 only, as
+ * published by the Free Software Foundation.  Oracle designates this
+ * particular file as subject to the "Classpath" exception as provided
+ * by Oracle in the LICENSE file that accompanied this code.
+ *
+ * This code is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+ * version 2 for more details (a copy is included in the LICENSE file that
+ * accompanied this code).
+ *
+ * You should have received a copy of the GNU General Public License version
+ * 2 along with this work; if not, write to the Free Software Foundation,
+ * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ * Please contact Oracle, 500 Oracle Parkway, Redwood Shores, CA 94065 USA
+ * or visit www.oracle.com if you need additional information or have any
+ * questions.
+ */
+
+package com.unknown.plaf.windows.classic;
+
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Graphics;
+
+import javax.swing.JComponent;
+import javax.swing.JSeparator;
+import javax.swing.JToolBar;
+import javax.swing.SwingConstants;
+import javax.swing.UIDefaults;
+import javax.swing.UIManager;
+import javax.swing.plaf.ComponentUI;
+import javax.swing.plaf.basic.BasicToolBarSeparatorUI;
+
+/**
+ * Draws Windows toolbar separators.
+ *
+ * @author Mark Davidson
+ */
+public final class WindowsToolBarSeparatorUI extends BasicToolBarSeparatorUI {
+	public static ComponentUI createUI(JComponent c) {
+		return new WindowsToolBarSeparatorUI();
+	}
+
+	@Override
+	public Dimension getPreferredSize(JComponent c) {
+		Dimension size = ((JToolBar.Separator) c).getSeparatorSize();
+
+		if(size != null) {
+			size = size.getSize();
+		} else {
+			size = new Dimension(6, 6);
+
+			if(((JSeparator) c).getOrientation() == SwingConstants.VERTICAL) {
+				size.height = 0;
+			} else {
+				size.width = 0;
+			}
+		}
+		return size;
+	}
+
+	@Override
+	public Dimension getMaximumSize(JComponent c) {
+		Dimension pref = getPreferredSize(c);
+		if(((JSeparator) c).getOrientation() == SwingConstants.VERTICAL) {
+			return new Dimension(pref.width, Short.MAX_VALUE);
+		} else {
+			return new Dimension(Short.MAX_VALUE, pref.height);
+		}
+	}
+
+	@Override
+	public void paint(Graphics g, JComponent c) {
+		boolean vertical = ((JSeparator) c).getOrientation() == SwingConstants.VERTICAL;
+		Dimension size = c.getSize();
+
+		Color temp = g.getColor();
+
+		UIDefaults table = UIManager.getLookAndFeelDefaults();
+
+		Color shadowColor = table.getColor("ToolBar.shadow");
+		Color highlightColor = table.getColor("ToolBar.highlight");
+
+		if(vertical) {
+			int x = (size.width / 2) - 1;
+			g.setColor(shadowColor);
+			g.drawLine(x, 2, x, size.height - 2);
+
+			g.setColor(highlightColor);
+			g.drawLine(x + 1, 2, x + 1, size.height - 2);
+		} else {
+			int y = (size.height / 2) - 1;
+			g.setColor(shadowColor);
+			g.drawLine(2, y, size.width - 2, y);
+			g.setColor(highlightColor);
+			g.drawLine(2, y + 1, size.width - 2, y + 1);
+		}
+		g.setColor(temp);
+	}
+}
