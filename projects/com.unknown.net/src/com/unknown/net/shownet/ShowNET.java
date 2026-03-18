@@ -43,6 +43,7 @@ public class ShowNET implements AutoCloseable {
 	private final Thread receiveThread;
 
 	private final List<LaserDiscoveryListener> discoveryListeners = new ArrayList<>();
+	private final List<LaserConnectionListener> connectionListeners = new ArrayList<>();
 
 	public ShowNET() throws IOException {
 		this(true);
@@ -285,7 +286,45 @@ public class ShowNET implements AutoCloseable {
 
 	public void removeLaserDiscoveryListener(LaserDiscoveryListener listener) {
 		synchronized(discoveryListeners) {
-			discoveryListeners.add(listener);
+			discoveryListeners.remove(listener);
+		}
+	}
+
+	protected void fireLaserConnected(Laser laser) {
+		synchronized(connectionListeners) {
+			for(LaserConnectionListener listener : connectionListeners) {
+				try {
+					listener.laserConnected(laser);
+				} catch(Throwable t) {
+					log.log(Levels.WARNING, "Laser connection listener failed: " + t.getMessage(),
+							t);
+				}
+			}
+		}
+	}
+
+	protected void fireLaserDisconnected(Laser laser) {
+		synchronized(connectionListeners) {
+			for(LaserConnectionListener listener : connectionListeners) {
+				try {
+					listener.laserDisconnected(laser);
+				} catch(Throwable t) {
+					log.log(Levels.WARNING, "Laser connection listener failed: " + t.getMessage(),
+							t);
+				}
+			}
+		}
+	}
+
+	public void addLaserConnectionListener(LaserConnectionListener listener) {
+		synchronized(connectionListeners) {
+			connectionListeners.add(listener);
+		}
+	}
+
+	public void removeLaserConnectionListener(LaserConnectionListener listener) {
+		synchronized(connectionListeners) {
+			connectionListeners.remove(listener);
 		}
 	}
 
@@ -301,11 +340,20 @@ public class ShowNET implements AutoCloseable {
 			}
 		}
 
-		laser.init();
-		laser.configure();
+		try {
+			laser.init();
+			laser.configure();
 
-		// send an empty frame initially to avoid random output
-		laser.sendFrame(List.of(new Point()), 1000);
+			// send an empty frame initially to avoid random output
+			laser.sendFrame(List.of(new Point()), 1000);
+		} catch(IOException e) {
+			// remove laser again
+			lasers.remove(addr);
+			throw e;
+		}
+
+		log.info("Laser connected: " + laser);
+		fireLaserConnected(laser);
 
 		return laser;
 	}
@@ -313,12 +361,18 @@ public class ShowNET implements AutoCloseable {
 	public void disconnect(Laser laser) {
 		// synchronize with the connect method here
 		synchronized(lasers) {
-			lasers.remove(laser.getAddress());
+			if(!laser.isDisconnected()) {
+				lasers.remove(laser.getAddress());
+				laser.disconnect();
+				log.info("Laser disconnected: " + laser);
+				fireLaserDisconnected(laser);
+			}
 		}
 	}
 
 	public Set<Laser> getConnectedLasers() {
-		return Collections.unmodifiableSet(new HashSet<>(lasers.values()));
+		return Collections.unmodifiableSet(
+				new HashSet<>(lasers.values().stream().filter(Laser::isConnected).toList()));
 	}
 
 	public Laser getLaser(InetAddress addr) {
@@ -343,7 +397,14 @@ public class ShowNET implements AutoCloseable {
 		return null;
 	}
 
-	void send(DatagramPacket packet) throws IOException {
-		socket.send(packet);
+	void send(Laser laser, DatagramPacket packet) throws IOException {
+		try {
+			socket.send(packet);
+		} catch(IOException e) {
+			if(laser.isConnected()) {
+				disconnect(laser);
+			}
+			throw e;
+		}
 	}
 }

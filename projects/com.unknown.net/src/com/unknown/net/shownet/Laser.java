@@ -68,6 +68,12 @@ public class Laser {
 	private Object txlock = new Object();
 	private Object framelock = new Object();
 
+	private State connectionState = State.INIT;
+
+	public static enum State {
+		INIT, CONFIGURING, CONNECTED, DISCONNECTED;
+	}
+
 	public Laser(ShowNET shownet, InetAddress address) {
 		this.shownet = shownet;
 		this.networkAddress = address;
@@ -125,6 +131,33 @@ public class Laser {
 		return generation == 2 ? 8 : 7;
 	}
 
+	public boolean isConnected() {
+		return connectionState == State.CONNECTED;
+	}
+
+	public boolean isDisconnected() {
+		return connectionState == State.DISCONNECTED;
+	}
+
+	private void setConnectionState(State state) {
+		connectionState = state;
+	}
+
+	public State getConnectionState() {
+		return connectionState;
+	}
+
+	void disconnect() {
+		connectionState = State.DISCONNECTED;
+
+		// clean up all requests
+		for(Entry<Integer, Request> entry : requests.entrySet()) {
+			Request request = entry.getValue();
+			request.timeout();
+			requests.remove(entry.getKey());
+		}
+	}
+
 	public void cleanupPackets() {
 		long now = System.currentTimeMillis();
 		long limit = now - TIMEOUT;
@@ -138,6 +171,10 @@ public class Laser {
 	}
 
 	public Future<byte[]> send(byte[] data, int length, int flags) throws IOException {
+		if(connectionState == State.DISCONNECTED) {
+			throw new IOException("Laser is not connected");
+		}
+
 		Scrambler scrambler = new Scrambler();
 
 		int packetFlags = 0;
@@ -220,7 +257,7 @@ public class Laser {
 		}
 
 		DatagramPacket packet = new DatagramPacket(buf, length, networkAddress, PORT);
-		shownet.send(packet);
+		shownet.send(this, packet);
 
 		if(request == null) {
 			return null;
@@ -264,6 +301,9 @@ public class Laser {
 	}
 
 	void init() throws IOException, TimeoutException {
+		// you can always re-init a laser
+		connectionState = State.INIT;
+
 		cryptKey[0] = Crypt.getKey(0);
 		cryptKey[2] = rng.nextInt();
 
@@ -344,6 +384,8 @@ public class Laser {
 			} else {
 				framePointSize = 7;
 			}
+
+			setConnectionState(State.CONFIGURING);
 		} catch(CancellationException | InterruptedException | ExecutionException e) {
 			throw new TimeoutException("Failed to initialize laser: timeout");
 		}
@@ -357,6 +399,10 @@ public class Laser {
 
 	public void readMemory(int address, int length, byte[] out, int offset, int timeout)
 			throws IOException, TimeoutException {
+		if(connectionState != State.CONFIGURING && connectionState != State.CONNECTED) {
+			throw new IOException("Laser not ready");
+		}
+
 		byte[] buf = new byte[28];
 
 		int len = length;
@@ -422,6 +468,10 @@ public class Laser {
 	}
 
 	public void configure() throws IOException, TimeoutException {
+		if(connectionState != State.CONFIGURING) {
+			throw new IOException("Laser startup sequence violated");
+		}
+
 		byte[] configA = readMemory(0x8020000, 2048);
 		byte[] configB = readMemory(0x807F800, 2048);
 
@@ -455,11 +505,21 @@ public class Laser {
 		Endianess.set16bitLE(txbuf, 42, (short) 2);
 		Endianess.set16bitLE(txbuf, 44, (short) 468);
 		Endianess.set32bitLE(txbuf, 52, 0x8B);
-		send(txbuf, txbuf.length, FLAG_CRYPT_RSP | FLAG_SCRAMBLE_RSP | FLAG_CRYPT_PLD | FLAG_SCRAMBLE_PLD |
-				FLAG_CRYPT_HDR | FLAG_SCRAMBLE_HDR | FLAG_IGNORE_RSP);
+
+		try {
+			send(txbuf, txbuf.length, FLAG_CRYPT_RSP | FLAG_SCRAMBLE_RSP | FLAG_CRYPT_PLD |
+					FLAG_SCRAMBLE_PLD | FLAG_CRYPT_HDR | FLAG_SCRAMBLE_HDR).get();
+			setConnectionState(State.CONNECTED);
+		} catch(CancellationException | InterruptedException | ExecutionException e) {
+			throw new TimeoutException("Failed to initialize laser: timeout");
+		}
 	}
 
 	public void sendNop() throws IOException {
+		if(connectionState != State.CONNECTED) {
+			throw new IOException("Laser is not connected");
+		}
+
 		byte[] buf = new byte[36];
 		int fragmentSeq = 0;
 		int fragmentCnt = 1;
@@ -484,6 +544,10 @@ public class Laser {
 	}
 
 	public void sendFrame(Frame frame) throws IOException {
+		if(connectionState != State.CONNECTED) {
+			throw new IOException("Laser is not connected");
+		}
+
 		// without this, a frame speed of <428 with interval 28000000 causes an overflow
 		int frameTime = timeInterval / frame.getSpeed();
 		if(frameTime > 0xFFFF) {
@@ -551,6 +615,7 @@ public class Laser {
 
 	@Override
 	public String toString() {
-		return "Laser[" + networkAddress.getHostAddress() + ",interfaceId=" + interfaceId + "]";
+		return "Laser[" + networkAddress.getHostAddress() + ",interfaceId=" + interfaceId + ",state=" +
+				connectionState + "]";
 	}
 }
