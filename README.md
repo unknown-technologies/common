@@ -37,7 +37,8 @@ Features
 - Pure Java based POSIX/Linux compatible API emulation including VFS
 - Pure Java implementation of Virtual Memory for use in emulators
 - Power8 emulator with Linux userspace ABI (can run various Linux programs)
-- Swing MOTIF L&F since it was removed from upstream JDK
+- Swing Motif L&F with window decorations
+- Swing Windows L&F (cross-platform compatible) with window decorations
 
 
 Building
