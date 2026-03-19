@@ -29,6 +29,7 @@ public class MessageBox {
 				bgcolor.getBlue() + ");");
 		JEditorPane ep = new JEditorPane("text/html",
 				message.replace("<body>", "<body style=\"" + style + "\">").replace("\n", "<br/>"));
+		ep.setBackground(bgcolor);
 		ep.addHyperlinkListener(new HyperlinkListener() {
 			@Override
 			public void hyperlinkUpdate(HyperlinkEvent e) {
