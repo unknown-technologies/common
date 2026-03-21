@@ -177,6 +177,28 @@ public class RiffWave extends Riff {
 		setBitsPerSample(24);
 	}
 
+	public void set24bitSamples(float[][] samples) {
+		if(getBitsPerSample() != 24) {
+			throw new IllegalStateException(
+					"cannot set 24bit samples for " + getBitsPerSample() + "bit sample data");
+		}
+
+		int channels = samples.length;
+		int length = samples[0].length;
+		if(channels != getChannels()) {
+			throw new IllegalStateException("cannot set " + samples.length + " channel sample data");
+		}
+
+		float[] interleaved = new float[channels * length];
+		for(int i = 0; i < length; i++) {
+			for(int ch = 0; ch < channels; ch++) {
+				interleaved[i * channels + ch] = samples[ch][i];
+			}
+		}
+
+		set24bitSamples(interleaved);
+	}
+
 	public short[] get16bitMono(int start, int end) {
 		short[] samples = get16bitSamples();
 		if(getChannels() == 1) {
