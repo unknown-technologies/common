@@ -38,6 +38,8 @@ public class Laser {
 
 	private static final int TIMEOUT = 500;
 
+	private static final int MAX_FRAGMENT_SIZE = 1024;
+
 	private static final Random rng = new Random();
 
 	private final ShowNET shownet;
@@ -67,6 +69,8 @@ public class Laser {
 
 	private Object txlock = new Object();
 	private Object framelock = new Object();
+
+	private FragmentInfo lastFrame = null;
 
 	private State connectionState = State.INIT;
 
@@ -525,6 +529,12 @@ public class Laser {
 		int fragmentCnt = 1;
 		int unknown = 2;
 
+		if(lastFrame != null) {
+			FragmentInfo info = lastFrame;
+			fragmentCnt = info.count;
+			fragmentSeq = info.sequence;
+		}
+
 		buf[14] = 0x1A;
 		Endianess.set16bitLE(buf, 12, (short) (1 | (unknown << 2)));
 		Endianess.set32bitLE(buf, 20, (fragmentCnt << 16) | ((fragmentSeq & 0x1F) << 11) | (packetId & 0x7FF));
@@ -556,8 +566,21 @@ public class Laser {
 
 		byte[] bitstream = frame.getBitstream();
 
-		int fragmentCnt = 1;
-		int fragmentSeq = 0;
+		int remainingSize = bitstream.length + 8;
+		if((remainingSize & 3) != 0) {
+			remainingSize += 4 - (remainingSize & 3);
+		}
+
+		byte[] data = new byte[remainingSize];
+		Endianess.set32bitLE(data, 0, (frame.getId() << 8) | (frame.isCompressed() ? 0x10 : 0));
+		Endianess.set16bitLE(data, 4, (short) frameTime);
+		Endianess.set16bitLE(data, 6, (short) frame.getPointCount());
+		System.arraycopy(bitstream, 0, data, 8, bitstream.length);
+
+		int fragmentCnt = bitstream.length / MAX_FRAGMENT_SIZE;
+		if((bitstream.length % MAX_FRAGMENT_SIZE) != 0) {
+			fragmentCnt++;
+		}
 		int fragmentOffset = 0;
 
 		int id;
@@ -566,25 +589,37 @@ public class Laser {
 			id = packetId;
 		}
 
-		int fragmentSize = bitstream.length + 8;
-		if((fragmentSize & 3) != 0) {
-			fragmentSize += 4 - (fragmentSize & 3);
+		for(int fragmentSeq = 0; fragmentSeq < fragmentCnt; fragmentSeq++) {
+			int fragmentSize = remainingSize;
+			if(fragmentSize > MAX_FRAGMENT_SIZE) {
+				fragmentSize = MAX_FRAGMENT_SIZE;
+			}
+
+			byte[] buf = new byte[fragmentSize + 36];
+
+			int unknown = 2;
+			Endianess.set16bitLE(buf, 12, (short) (1 | (unknown << 2)));
+			buf[14] = 0x1A;
+			Endianess.set32bitLE(buf, 20,
+					(fragmentCnt << 16) | ((fragmentSeq & 0x1F) << 11) | (id & 0x7FF));
+			Endianess.set32bitLE(buf, 24, (fragmentSize << 20) | (fragmentOffset & 0xFFFF));
+			System.arraycopy(data, fragmentOffset, buf, 36, fragmentSize);
+
+			lastFrame = new FragmentInfo(fragmentCnt, fragmentSeq);
+
+			// wait for the response to not overload the laser with too many packets
+			try {
+				send(buf, buf.length, FLAG_SCRAMBLE_HDR | FLAG_CRYPT_HDR | FLAG_SCRAMBLE_PLD |
+						FLAG_SCRAMBLE_RSP).get();
+			} catch(InterruptedException | ExecutionException e) {
+				throw new IOException(e);
+			} catch(IOException e) {
+				throw e;
+			}
+
+			fragmentOffset += fragmentSize;
+			remainingSize -= fragmentSize;
 		}
-
-		byte[] buf = new byte[fragmentSize + 36];
-
-		int unknown = 2;
-		Endianess.set16bitLE(buf, 12, (short) (1 | (unknown << 2)));
-		buf[14] = 0x1A;
-		Endianess.set32bitLE(buf, 20, (fragmentCnt << 16) | ((fragmentSeq & 0x1F) << 11) | (id & 0x7FF));
-		Endianess.set32bitLE(buf, 24, (fragmentSize << 20) | (fragmentOffset & 0xFFFF));
-		Endianess.set32bitLE(buf, 36, (frame.getId() << 8) | (frame.isCompressed() ? 0x10 : 0));
-		Endianess.set16bitLE(buf, 40, (short) frameTime);
-		Endianess.set16bitLE(buf, 42, (short) frame.getPointCount());
-		System.arraycopy(bitstream, 0, buf, 44, bitstream.length);
-
-		send(buf, buf.length, FLAG_SCRAMBLE_HDR | FLAG_CRYPT_HDR | FLAG_SCRAMBLE_PLD | FLAG_SCRAMBLE_RSP |
-				FLAG_IGNORE_RSP);
 	}
 
 	public String getMACAddressString() {
@@ -617,5 +652,15 @@ public class Laser {
 	public String toString() {
 		return "Laser[" + networkAddress.getHostAddress() + ",interfaceId=" + interfaceId + ",state=" +
 				connectionState + "]";
+	}
+
+	private static class FragmentInfo {
+		private final int count;
+		private final int sequence;
+
+		private FragmentInfo(int count, int sequence) {
+			this.count = count;
+			this.sequence = sequence;
+		}
 	}
 }
