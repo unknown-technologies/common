@@ -40,6 +40,10 @@ public class Frame {
 			compressed = false;
 		}
 
+		if(bitstream.length > 32768) {
+			throw new IllegalArgumentException("Frame too big!");
+		}
+
 		id = laser.nextFrameId();
 	}
 
