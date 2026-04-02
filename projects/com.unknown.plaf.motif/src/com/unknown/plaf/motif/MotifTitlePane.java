@@ -103,6 +103,7 @@ public class MotifTitlePane extends JComponent {
 	private Color shadow;
 
 	private long popupTime;
+	private Point lastPoint;
 
 	public MotifTitlePane(JRootPane root, MotifRootPaneUI ui) {
 		this.rootPane = root;
@@ -569,7 +570,9 @@ public class MotifTitlePane extends JComponent {
 				long when = evt.getWhen();
 				long dt = when - popupTime;
 				int timeout = getMultiClickInterval();
-				if(evt.getClickCount() == 2 || dt < timeout) {
+				boolean dbl = dt < timeout && evt.getPoint().equals(lastPoint);
+				lastPoint = evt.getPoint();
+				if(evt.getClickCount() == 2 || dbl) {
 					// mark button as not pressed, otherwise re-showing the frame will have a still
 					// pressed button
 					systemButton.getModel().setPressed(false);
@@ -578,6 +581,16 @@ public class MotifTitlePane extends JComponent {
 							ActionEvent.ACTION_PERFORMED, null, evt.getWhen(), 0));
 					systemMenu.setVisible(false);
 				}
+			}
+
+			@Override
+			public void mouseMoved(MouseEvent evt) {
+				lastPoint = null;
+			}
+
+			@Override
+			public void mouseExited(MouseEvent evt) {
+				lastPoint = null;
 			}
 		});
 	}

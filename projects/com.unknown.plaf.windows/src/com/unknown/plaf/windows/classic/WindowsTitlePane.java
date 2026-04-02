@@ -17,6 +17,7 @@ import java.awt.LayoutManager;
 import java.awt.Paint;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.Toolkit;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
@@ -216,6 +217,8 @@ public class WindowsTitlePane extends JComponent {
 	private Color notSelectedTitleGradientColor;
 	private JPopupMenu systemPopupMenu;
 	private JLabel systemLabel;
+	private long popupTime;
+	private Point lastPoint;
 
 	private Font titleFont;
 	private int titlePaneHeight;
@@ -480,7 +483,9 @@ public class WindowsTitlePane extends JComponent {
 	}
 
 	protected boolean isIcon() {
-		return (state & Frame.ICONIFIED) != 0;
+		Window win = getWindow();
+		boolean isFrame = win != null && win instanceof Frame;
+		return isFrame && (state & Frame.ICONIFIED) != 0;
 	}
 
 	protected Icon getFrameIcon() {
@@ -884,20 +889,38 @@ public class WindowsTitlePane extends JComponent {
 		systemLabel = tmp;
 		systemLabel.addMouseListener(new MouseAdapter() {
 			@Override
-			public void mouseClicked(MouseEvent e) {
-				if(e.getClickCount() == 2 && isClosable() && !isIcon()) {
+			public void mousePressed(MouseEvent e) {
+				long dt = System.currentTimeMillis() - popupTime;
+				boolean dbl = dt < getMultiClickInterval() && e.getPoint().equals(lastPoint);
+				lastPoint = e.getPoint();
+				if((e.getClickCount() == 2 || dbl) && isClosable()) {
 					systemPopupMenu.setVisible(false);
 					close();
 				} else {
-					super.mouseClicked(e);
+					showSystemPopupMenu(e.getComponent());
 				}
 			}
 
 			@Override
-			public void mousePressed(MouseEvent e) {
-				showSystemPopupMenu(e.getComponent());
+			public void mouseMoved(MouseEvent e) {
+				lastPoint = null;
+			}
+
+			@Override
+			public void mouseExited(MouseEvent e) {
+				lastPoint = null;
 			}
 		});
+	}
+
+	private static int getMultiClickInterval() {
+		Integer multiClickInterval = (Integer) Toolkit.getDefaultToolkit()
+				.getDesktopProperty("awt.multiClickInterval");
+		if(multiClickInterval != null) {
+			return multiClickInterval;
+		} else {
+			return 300; // by default we use 300ms ... good enough if there is non better info
+		}
 	}
 
 	protected void addSystemMenuItems(JPopupMenu menu) {
@@ -938,6 +961,7 @@ public class WindowsTitlePane extends JComponent {
 			dim.width += border.getBorderInsets(rootPane).left + border.getBorderInsets(rootPane).right;
 			dim.height += border.getBorderInsets(rootPane).bottom + border.getBorderInsets(rootPane).top;
 		}
+		popupTime = System.currentTimeMillis();
 		if(!isIcon()) {
 			systemPopupMenu.show(invoker, getX() - dim.width, getY() + getHeight() - dim.height);
 		} else {
