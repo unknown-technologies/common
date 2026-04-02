@@ -9,6 +9,7 @@ import java.awt.Frame;
 import java.awt.Graphics;
 import java.awt.LayoutManager;
 import java.awt.Point;
+import java.awt.Toolkit;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -100,6 +101,8 @@ public class MotifTitlePane extends JComponent {
 	private Color color;
 	private Color highlight;
 	private Color shadow;
+
+	private long popupTime;
 
 	public MotifTitlePane(JRootPane root, MotifRootPaneUI ui) {
 		this.rootPane = root;
@@ -551,13 +554,22 @@ public class MotifTitlePane extends JComponent {
 		systemButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				systemMenu.show(systemButton, 0, BUTTON_SIZE);
+
+				// workaround for JDK bug which consumes the next mouse event after a popup menu became
+				// visible. This results in a reset of the click count, which means 3 clicks would be
+				// required to perform a "double click". This hack implements the double click timer
+				// manually
+				popupTime = e.getWhen();
 			}
 		});
 
 		systemButton.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mousePressed(MouseEvent evt) {
-				if((evt.getClickCount() == 2)) {
+				long when = evt.getWhen();
+				long dt = when - popupTime;
+				int timeout = getMultiClickInterval();
+				if(evt.getClickCount() == 2 || dt < timeout) {
 					// mark button as not pressed, otherwise re-showing the frame will have a still
 					// pressed button
 					systemButton.getModel().setPressed(false);
@@ -568,6 +580,16 @@ public class MotifTitlePane extends JComponent {
 				}
 			}
 		});
+	}
+
+	private static int getMultiClickInterval() {
+		Integer multiClickInterval = (Integer) Toolkit.getDefaultToolkit()
+				.getDesktopProperty("awt.multiClickInterval");
+		if(multiClickInterval != null) {
+			return multiClickInterval;
+		} else {
+			return 300; // by default we use 300ms ... good enough if there is non better info
+		}
 	}
 
 	private static int getButtonMnemonic(String button) {
