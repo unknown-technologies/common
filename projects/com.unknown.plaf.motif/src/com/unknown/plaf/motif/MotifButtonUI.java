@@ -50,7 +50,7 @@ import javax.swing.plaf.basic.BasicButtonUI;
 public class MotifButtonUI extends BasicButtonUI {
 	protected Color selectColor;
 
-	private boolean defaults_initialized = false;
+	private boolean defaultsInitialized = false;
 
 	private static final ComponentUI UI = new MotifButtonUI();
 
@@ -75,9 +75,9 @@ public class MotifButtonUI extends BasicButtonUI {
 	@Override
 	public void installDefaults(AbstractButton b) {
 		super.installDefaults(b);
-		if(!defaults_initialized) {
+		if(!defaultsInitialized) {
 			selectColor = UIManager.getColor(getPropertyPrefix() + "select");
-			defaults_initialized = true;
+			defaultsInitialized = true;
 		}
 		LookAndFeel.installProperty(b, "opaque", Boolean.FALSE);
 	}
@@ -85,7 +85,7 @@ public class MotifButtonUI extends BasicButtonUI {
 	@Override
 	protected void uninstallDefaults(AbstractButton b) {
 		super.uninstallDefaults(b);
-		defaults_initialized = false;
+		defaultsInitialized = false;
 	}
 
 	// ********************************
@@ -128,13 +128,10 @@ public class MotifButtonUI extends BasicButtonUI {
 
 	@Override
 	protected void paintButtonPressed(Graphics g, AbstractButton b) {
-
 		fillContentArea(g, b, selectColor);
-
 	}
 
 	protected void fillContentArea(Graphics g, AbstractButton b, Color fillColor) {
-
 		if(b.isContentAreaFilled()) {
 			Insets margin = b.getMargin();
 			Insets insets = b.getInsets();
