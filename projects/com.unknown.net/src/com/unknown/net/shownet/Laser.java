@@ -261,7 +261,12 @@ public class Laser {
 		}
 
 		DatagramPacket packet = new DatagramPacket(buf, length, networkAddress, PORT);
-		shownet.send(this, packet);
+		try {
+			shownet.send(this, packet);
+		} catch(IOException e) {
+			shownet.disconnect(this);
+			throw e;
+		}
 
 		if(request == null) {
 			return null;
@@ -611,9 +616,11 @@ public class Laser {
 			try {
 				send(buf, buf.length, FLAG_SCRAMBLE_HDR | FLAG_CRYPT_HDR | FLAG_SCRAMBLE_PLD |
 						FLAG_SCRAMBLE_RSP).get();
-			} catch(InterruptedException | ExecutionException e) {
-				throw new IOException(e);
+			} catch(CancellationException | InterruptedException | ExecutionException e) {
+				shownet.disconnect(this);
+				throw new TimeoutException(e);
 			} catch(IOException e) {
+				shownet.disconnect(this);
 				throw e;
 			}
 
