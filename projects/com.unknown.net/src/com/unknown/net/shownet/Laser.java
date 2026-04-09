@@ -11,6 +11,7 @@ import java.util.concurrent.CancellationException;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
 import com.unknown.util.io.Endianess;
@@ -325,7 +326,7 @@ public class Laser {
 		Future<byte[]> result = send(buf, buf.length, FLAG_KEYS | FLAG_CRYPT_HDR | FLAG_SCRAMBLE_HDR |
 				FLAG_CRYPT_PLD | FLAG_SCRAMBLE_PLD | FLAG_CRYPT_RSP | FLAG_SCRAMBLE_RSP);
 		try {
-			byte[] rx = result.get();
+			byte[] rx = result.get(TIMEOUT, TimeUnit.MILLISECONDS);
 
 			int offset = 0;
 			switch(rx.length) {
@@ -395,7 +396,8 @@ public class Laser {
 			}
 
 			setConnectionState(State.CONFIGURING);
-		} catch(CancellationException | InterruptedException | ExecutionException e) {
+		} catch(CancellationException | InterruptedException | ExecutionException
+				| java.util.concurrent.TimeoutException e) {
 			throw new TimeoutException("Failed to initialize laser: timeout");
 		}
 	}
@@ -431,7 +433,8 @@ public class Laser {
 
 			try {
 				byte[] rx = send(buf, buf.length, FLAG_CRYPT_RSP | FLAG_SCRAMBLE_RSP | FLAG_CRYPT_PLD |
-						FLAG_SCRAMBLE_PLD | FLAG_CRYPT_HDR | FLAG_SCRAMBLE_HDR).get();
+						FLAG_SCRAMBLE_PLD | FLAG_CRYPT_HDR | FLAG_SCRAMBLE_HDR).get(TIMEOUT,
+								TimeUnit.MILLISECONDS);
 
 				if(rx.length != size + 32) {
 					throw new IOException("Invalid receive size, expected " + (size + 32) +
@@ -444,7 +447,7 @@ public class Laser {
 				len -= size;
 				addr += size;
 				timeoutctr = timeout;
-			} catch(CancellationException e) {
+			} catch(CancellationException | java.util.concurrent.TimeoutException e) {
 				if(timeoutctr == 0) {
 					throw new TimeoutException("Failed to retrieve block: timeout");
 				}
@@ -517,9 +520,11 @@ public class Laser {
 
 		try {
 			send(txbuf, txbuf.length, FLAG_CRYPT_RSP | FLAG_SCRAMBLE_RSP | FLAG_CRYPT_PLD |
-					FLAG_SCRAMBLE_PLD | FLAG_CRYPT_HDR | FLAG_SCRAMBLE_HDR).get();
+					FLAG_SCRAMBLE_PLD | FLAG_CRYPT_HDR | FLAG_SCRAMBLE_HDR).get(TIMEOUT,
+							TimeUnit.MILLISECONDS);
 			setConnectionState(State.CONNECTED);
-		} catch(CancellationException | InterruptedException | ExecutionException e) {
+		} catch(CancellationException | InterruptedException | ExecutionException
+				| java.util.concurrent.TimeoutException e) {
 			throw new TimeoutException("Failed to initialize laser: timeout");
 		}
 	}
@@ -615,8 +620,9 @@ public class Laser {
 			// wait for the response to not overload the laser with too many packets
 			try {
 				send(buf, buf.length, FLAG_SCRAMBLE_HDR | FLAG_CRYPT_HDR | FLAG_SCRAMBLE_PLD |
-						FLAG_SCRAMBLE_RSP).get();
-			} catch(CancellationException | InterruptedException | ExecutionException e) {
+						FLAG_SCRAMBLE_RSP).get(TIMEOUT, TimeUnit.MILLISECONDS);
+			} catch(CancellationException | InterruptedException | ExecutionException
+					| java.util.concurrent.TimeoutException e) {
 				shownet.disconnect(this);
 				throw new TimeoutException(e);
 			} catch(IOException e) {
