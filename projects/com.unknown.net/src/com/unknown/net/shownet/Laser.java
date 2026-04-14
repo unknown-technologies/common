@@ -60,6 +60,8 @@ public class Laser {
 	private int status;
 	private int memoryAddress;
 	private int configAddress;
+	private int dmxBufAddress;
+	private int dmxBufSize;
 	private final byte[] config = new byte[2048];
 
 	private int sequenceId = 1000;
@@ -505,14 +507,17 @@ public class Laser {
 			System.arraycopy(config, 80, mac, 0, mac.length);
 		}
 
+		dmxBufSize = 513;
+		dmxBufAddress = 2 * frameMemorySize + 64 + memoryAddress;
+
 		byte[] txbuf = new byte[500];
 		Endianess.set16bitLE(txbuf, 12, (short) 1);
 		txbuf[14] = 0x12;
 		Endianess.set16bitLE(txbuf, 22, (short) 1);
-		Endianess.set32bitLE(txbuf, 24, 520 + 2 * frameMemorySize + 64 + memoryAddress);
-		Endianess.set32bitLE(txbuf, 28, 2 * frameMemorySize + 64 + memoryAddress);
+		Endianess.set32bitLE(txbuf, 24, dmxBufAddress + 520);
+		Endianess.set32bitLE(txbuf, 28, dmxBufAddress);
 		Endianess.set16bitLE(txbuf, 32, (short) 516);
-		Endianess.set16bitLE(txbuf, 34, (short) 513);
+		Endianess.set16bitLE(txbuf, 34, (short) dmxBufSize);
 		Endianess.set16bitLE(txbuf, 36, (short) (generation == 2 ? 254 : 0));
 		Endianess.set16bitLE(txbuf, 42, (short) 2);
 		Endianess.set16bitLE(txbuf, 44, (short) 468);
@@ -633,6 +638,40 @@ public class Laser {
 			fragmentOffset += fragmentSize;
 			remainingSize -= fragmentSize;
 		}
+	}
+
+	public void sendDMX(byte[] dmx) throws IOException {
+		if(connectionState != State.CONNECTED) {
+			throw new IOException("Laser is not connected");
+		}
+
+		if(dmxBufSize == 0 || dmxBufAddress == 0) {
+			throw new IOException("DMX buffer not configured");
+		}
+
+		// Whoever developed this protocol was seriously drunk. DMX
+		// transfers up to 512 channels per frame. Channels are counted
+		// 1-512 for humans or 0-511 for machines. For whatever
+		// inexplicable reason, ShowNET needs 513 (!) DMX channels and
+		// ignores the first one such that dmxBuf[0] = ??? (ignored) and
+		// dmxBuf[1..512] = DMX data. This is why dmx.length == 512 but
+		// dmxBufSize == 513.
+		if(dmx.length + 1 != dmxBufSize) {
+			throw new IOException("invalid DMX buffer size");
+		}
+
+		int unknown = 2;
+
+		byte[] buf = new byte[24 + dmxBufSize];
+		Endianess.set16bitLE(buf, 12, (short) (1 | (unknown << 2)));
+		buf[14] = 0x0A;
+		Endianess.set32bitLE(buf, 20, dmxBufAddress);
+
+		// ignore dummy channel, therefore start at offset 1
+		System.arraycopy(dmx, 0, buf, 24 + 1, dmx.length);
+
+		send(buf, buf.length, FLAG_SCRAMBLE_HDR | FLAG_CRYPT_HDR | FLAG_SCRAMBLE_PLD | FLAG_SCRAMBLE_RSP |
+				FLAG_IGNORE_RSP);
 	}
 
 	public String getMACAddressString() {
