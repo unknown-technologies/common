@@ -64,6 +64,13 @@ public class LaserInfo {
 		return Arrays.copyOf(license, license.length);
 	}
 
+	public short getLicense(int id) {
+		if(id < 0 || id >= 8) {
+			throw new IllegalArgumentException("invalid license slot");
+		}
+		return license[id];
+	}
+
 	public String getBootloaderString() {
 		return Integer.toUnsignedString(bootloader);
 	}
@@ -72,46 +79,16 @@ public class LaserInfo {
 		return Integer.toUnsignedString(firmware);
 	}
 
+	public String getLicenseString(int id) {
+		return Laser.getLicenseDisplayName(getLicense(id));
+	}
+
 	public String getLicenseString() {
 		List<String> tokens = new ArrayList<>();
 		for(short id : license) {
-			switch(Short.toUnsignedInt(id)) {
-			case 0xF3CC:
-				tokens.add("/Open");
-				break;
-			case 0xA:
-				tokens.add("/Phoenix");
-				break;
-			case 0x16BD:
-				tokens.add("/HE-Laserscan");
-				break;
-			case 0x3D69:
-				tokens.add("/Pango");
-				break;
-			case 0x1730:
-				tokens.add("/Showeditor");
-				break;
-			case 0x70B8:
-				tokens.add("/Showcontroller");
-				break;
-			case 0x4008:
-				tokens.add("/Dummy1");
-				break;
-			case 0x76E8:
-				tokens.add("/Dummy2");
-				break;
-			case 0x2B43:
-				tokens.add("/Dummy3");
-				break;
-			case 0x5DB0:
-				tokens.add("/Dummy4");
-				break;
-			case 0x134A:
-				tokens.add("/Dummy5");
-				break;
-			case 0x5E7A:
-				tokens.add("/Dummy6");
-				break;
+			String name = Laser.getLicenseDisplayName(id);
+			if(name != null) {
+				tokens.add(name);
 			}
 		}
 		return tokens.stream().collect(Collectors.joining(" "));

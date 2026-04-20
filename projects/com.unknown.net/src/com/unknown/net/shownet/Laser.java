@@ -3,6 +3,7 @@ package com.unknown.net.shownet;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.InetAddress;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map.Entry;
@@ -13,6 +14,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 import com.unknown.util.io.Endianess;
 import com.unknown.util.log.Trace;
@@ -37,6 +39,15 @@ public class Laser {
 	public static final int FLAG_KEYS = 0x80;
 	public static final int FLAG_IGNORE_RSP = 0x100;
 
+	public static final int MODE_NETWORK = 1;
+	public static final int MODE_DMX = 2;
+	public static final int MODE_SOUND_TO_LIGHT = 3;
+	public static final int MODE_DEMO = 6;
+	public static final int MODE_ILDA_BR_TX = 8;
+	public static final int MODE_ILDA_BR_RX = 9;
+	public static final int MODE_ILDA_THRU = 0x0B;
+	public static final int MODE_ILDA_BR_TX_PC = 0x0D;
+
 	private static final int TIMEOUT = 500;
 
 	private static final int MAX_FRAGMENT_SIZE = 1024;
@@ -53,11 +64,12 @@ public class Laser {
 	private int frameMemorySize;
 	private int framePointSize;
 	private int revision;
+	private int bootloader;
 	private int firmware;
 	private int generation;
-	private int colorFeatures;
+	private int hardwareId;
 	private int colorCount;
-	private int status;
+	private int mode;
 	private int memoryAddress;
 	private int configAddress;
 	private int dmxBufAddress;
@@ -94,6 +106,10 @@ public class Laser {
 		return frameMemorySize;
 	}
 
+	public int getBootloader() {
+		return bootloader;
+	}
+
 	public int getFirmware() {
 		return firmware;
 	}
@@ -102,8 +118,8 @@ public class Laser {
 		return generation;
 	}
 
-	public int getColorFeatures() {
-		return colorFeatures;
+	public int getHardwareId() {
+		return hardwareId;
 	}
 
 	public int getColorCount() {
@@ -306,7 +322,7 @@ public class Laser {
 				}
 			}
 
-			status = Endianess.get32bitLE(data, 20) >> 28;
+			mode = Endianess.get32bitLE(data, 20) >> 28;
 
 			request.signal(data, 0, length);
 		}
@@ -345,6 +361,8 @@ public class Laser {
 
 			generation = 1;
 
+			bootloader = Endianess.get32bitLE(rx, offset);
+
 			int[] id = new int[3];
 			for(int i = 0; i < id.length; i++) {
 				id[i] = Endianess.get32bitLE(rx, offset + 24 + i * 4);
@@ -372,13 +390,13 @@ public class Laser {
 				timeInterval = 28000000;
 			}
 
-			colorFeatures = -1;
+			hardwareId = -1;
 			if(firmware > 2014082201) {
-				colorFeatures = Endianess.get32bitLE(rx, offset + 90);
+				hardwareId = Endianess.get32bitLE(rx, offset + 90);
 			}
 
 			if(firmware < 2018091702) {
-				if(colorFeatures == 4) {
+				if(hardwareId == 4) {
 					colorCount = 3;
 				} else {
 					colorCount = 6;
@@ -391,7 +409,7 @@ public class Laser {
 
 			// AdminTool: generation == 2 => framePointSize = 9, otherwise 7
 			// but this is incorrect, the following code is based on the encode_frame routine
-			if(generation == 2 || colorFeatures == 5) {
+			if(generation == 2 || hardwareId == 5) {
 				framePointSize = 9;
 			} else {
 				framePointSize = 7;
@@ -680,12 +698,117 @@ public class Laser {
 				Byte.toUnsignedInt(mac[4]), Byte.toUnsignedInt(mac[5]));
 	}
 
+	public short getDongleStatus() {
+		return Endianess.get16bitLE(config, 0x372);
+	}
+
+	public String getDongleStatusString() {
+		short dongle = getDongleStatus();
+		if((dongle & 1) != 0) {
+			return "not available";
+		} else {
+			List<String> flags = new ArrayList<>();
+			flags.add("available");
+			if((dongle & 2) == 0) {
+				flags.add("initialized");
+			}
+			if((dongle & 4) == 0) {
+				flags.add("key");
+			}
+			if((dongle & 8) == 0) {
+				flags.add("locked");
+			}
+			return flags.stream().collect(Collectors.joining(", "));
+		}
+	}
+
+	public short getLicense(int id) {
+		if(id < 0 || id >= 8) {
+			throw new IllegalArgumentException("invalid license slot");
+		}
+		return Endianess.get16bitLE(config, 0x172 + 64 * id);
+	}
+
+	public String getLicenseString(int id) {
+		return getLicenseDisplayName(getLicense(id));
+	}
+
+	public String getLicenseString() {
+		List<String> tokens = new ArrayList<>();
+		for(int id = 0; id < 8; id++) {
+			String name = getLicenseString(id);
+			if(name != null) {
+				tokens.add(name);
+			}
+		}
+		return tokens.stream().collect(Collectors.joining(" "));
+	}
+
+	public static String getLicenseDisplayName(short id) {
+		switch(Short.toUnsignedInt(id)) {
+		case 0xF3CC:
+			return "/Open";
+		case 0xA:
+			return "/Phoenix";
+		case 0x16BD:
+			return "/HE-Laserscan";
+		case 0x3D69:
+			return "/Pango";
+		case 0x1730:
+			return "/Showeditor";
+		case 0x70B8:
+			return "/Showcontroller";
+		case 0x4008:
+			return "/Dummy1";
+		case 0x76E8:
+			return "/Dummy2";
+		case 0x2B43:
+			return "/Dummy3";
+		case 0x5DB0:
+			return "/Dummy4";
+		case 0x134A:
+			return "/Dummy5";
+		case 0x5E7A:
+			return "/Dummy6";
+		default:
+			return null;
+		}
+	}
+
+	public int getOperatingMode() {
+		return mode;
+	}
+
+	public String getModeString() {
+		switch(getOperatingMode()) {
+		case MODE_NETWORK:
+			return "Network";
+		case MODE_DMX:
+			return "DMX";
+		case MODE_SOUND_TO_LIGHT:
+			return "Sound-to-Light";
+		case MODE_DEMO:
+			return "Demo";
+		case MODE_ILDA_BR_TX:
+			return "ILDA Bridge Transmitter";
+		case MODE_ILDA_BR_TX_PC:
+			return "ILDA Bridge Transmitter (PC)";
+		case MODE_ILDA_BR_RX:
+			return "ILDA Bridge Receiver";
+		case MODE_ILDA_THRU:
+			return "ILDA THRU";
+		default:
+			return Integer.toString(mode);
+		}
+	}
+
 	public String getInfo() {
 		StringBuilder buf = new StringBuilder();
 		buf.append(String.format("REV:   %d\n", revision));
 		buf.append(String.format("FW:    %d\n", firmware));
 		buf.append(String.format("GEN:   %d\n", generation));
-		buf.append(String.format("COLOR: %d (%d CHANNELS)\n", colorFeatures, colorCount));
+		buf.append(String.format("HW:    %d\n", hardwareId));
+		buf.append(String.format("COLOR: %d CHANNELS\n", colorCount));
 		buf.append(String.format("TIME:  %d\n", timeInterval));
 		buf.append(String.format("ID     %08X:%08X:%08X (%08X:%08X:%08X, %s)\n",
 				interfaceId.get(0) ^ 0xD49A3433, interfaceId.get(1) ^ 0xD49A3433,
@@ -696,7 +819,7 @@ public class Laser {
 		buf.append(String.format("ADDR:  %08X\n", memoryAddress));
 		buf.append(String.format("CFG:   %08X\n", configAddress));
 		buf.append(String.format("MAC:   %s\n", getMACAddressString()));
-		buf.append(String.format("STATE: %d", status));
+		buf.append(String.format("MODE:  %s (%d)", getModeString(), mode));
 		return buf.toString();
 	}
 

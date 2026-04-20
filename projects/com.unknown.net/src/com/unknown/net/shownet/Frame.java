@@ -48,7 +48,7 @@ public class Frame {
 	}
 
 	private byte[] encodeCompressed(List<Point> points) {
-		int colorFeatures = laser.getColorFeatures();
+		int hardwareId = laser.getHardwareId();
 		int generation = laser.getGeneration();
 		int scale = generation == 2 ? 256 : 512;
 
@@ -113,7 +113,7 @@ public class Frame {
 				int color2 = lastColor2;
 				int color3 = lastColor3;
 
-				if(colorFeatures == 5) {
+				if(hardwareId == 5) {
 					color1 = Short.toUnsignedInt(p.userColor1) / scale;
 					color2 = Short.toUnsignedInt(p.userColor2) / scale;
 					color3 = Short.toUnsignedInt(p.userColor3) / scale;
@@ -172,7 +172,7 @@ public class Frame {
 	}
 
 	private byte[] encodeUncompressed(List<Point> points) {
-		int colorFeatures = laser.getColorFeatures();
+		int hardwareId = laser.getHardwareId();
 		int generation = laser.getGeneration();
 		int scale = generation == 2 ? 256 : 512;
 
@@ -190,7 +190,7 @@ public class Frame {
 			buf[ptr++] = (byte) (Short.toUnsignedInt(p.green) / scale);
 			buf[ptr++] = (byte) (Short.toUnsignedInt(p.blue) / scale);
 
-			if(colorFeatures == 5) {
+			if(hardwareId == 5) {
 				buf[ptr++] = (byte) (Short.toUnsignedInt(p.userColor1) / scale);
 				buf[ptr++] = (byte) (Short.toUnsignedInt(p.userColor2) / scale);
 				buf[ptr++] = (byte) (Short.toUnsignedInt(p.userColor3) / scale);
