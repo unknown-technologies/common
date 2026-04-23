@@ -204,12 +204,14 @@ public class ShowNET implements AutoCloseable {
 	@Override
 	public void close() {
 		socket.close();
-		discoverySocket.close();
+		if(discoverySocket != null) {
+			discoverySocket.close();
 
-		try {
-			discoveryThread.join();
-		} catch(InterruptedException e) {
-			Thread.currentThread().interrupt();
+			try {
+				discoveryThread.join();
+			} catch(InterruptedException e) {
+				Thread.currentThread().interrupt();
+			}
 		}
 
 		try {
@@ -217,6 +219,10 @@ public class ShowNET implements AutoCloseable {
 		} catch(InterruptedException e) {
 			Thread.currentThread().interrupt();
 		}
+	}
+
+	public boolean hasDiscovery() {
+		return discoverySocket != null;
 	}
 
 	public void addDiscoveryAddress(InetAddress addr) {
