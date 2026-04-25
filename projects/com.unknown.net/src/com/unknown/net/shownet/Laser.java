@@ -671,9 +671,9 @@ public class Laser {
 		// transfers up to 512 channels per frame. Channels are counted
 		// 1-512 for humans or 0-511 for machines. For whatever
 		// inexplicable reason, ShowNET needs 513 (!) DMX channels and
-		// ignores the first one such that dmxBuf[0] = ??? (ignored) and
-		// dmxBuf[1..512] = DMX data. This is why dmx.length == 512 but
-		// dmxBufSize == 513.
+		// ignores the last one such that dmxBuf[0] = channel 512,
+		// dmxBuf[1..511] = channel 1-510, and channel 511 gets lost.
+		// This is why dmx.length == 512 but dmxBufSize == 513.
 		if(dmx.length + 1 != dmxBufSize) {
 			throw new IOException("invalid DMX buffer size");
 		}
@@ -685,8 +685,9 @@ public class Laser {
 		buf[14] = 0x0A;
 		Endianess.set32bitLE(buf, 20, dmxBufAddress);
 
-		// ignore dummy channel, therefore start at offset 1
+		// copy channel 512 to dmxBuf[0], channel 511 gets lost
 		System.arraycopy(dmx, 0, buf, 24 + 1, dmx.length);
+		buf[24] = dmx[511];
 
 		send(buf, buf.length, FLAG_SCRAMBLE_HDR | FLAG_CRYPT_HDR | FLAG_SCRAMBLE_PLD | FLAG_SCRAMBLE_RSP |
 				FLAG_IGNORE_RSP);
