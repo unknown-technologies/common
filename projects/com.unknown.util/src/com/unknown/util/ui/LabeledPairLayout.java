@@ -5,7 +5,9 @@ import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Insets;
 import java.awt.LayoutManager;
+import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.List;
 import java.util.Vector;
 
 public class LabeledPairLayout implements LayoutManager {
@@ -18,25 +20,46 @@ public class LabeledPairLayout implements LayoutManager {
 	int yGap = 2;
 	int xGap = 2;
 
-	private LabeledPairLayout other;
+	private LayoutGroup group;
 
 	public LabeledPairLayout() {
-		this(null);
+		group = null;
+	}
+
+	public LabeledPairLayout(LayoutGroup group) {
+		this.group = group;
+		group.add(this);
 	}
 
 	public LabeledPairLayout(LabeledPairLayout other) {
-		this.other = other;
-		if(other != null) {
-			other.other = this;
+		if(other != null && other.group != null) {
+			group = other.group;
+			group.add(this);
+		} else {
+			group = new LayoutGroup();
+			group.add(this);
+			if(other != null) {
+				other.group = group;
+				group.add(other);
+			}
 		}
 	}
 
-	private int getLabelWidth(boolean all) {
-		int labelWidth = 0;
-
-		if(all && other != null) {
-			labelWidth = other.getLabelWidth(false);
+	private int getTotalLabelWidth() {
+		if(group != null) {
+			// this works because if there is a group, this layout will be part of that group
+			int labelWidth = 0;
+			for(LabeledPairLayout layout : group.getLayouts()) {
+				labelWidth = Math.max(labelWidth, layout.getLabelWidth());
+			}
+			return labelWidth;
+		} else {
+			return getLabelWidth();
 		}
+	}
+
+	private int getLabelWidth() {
+		int labelWidth = 0;
 
 		Enumeration<Component> labelIter = labels.elements();
 		while(labelIter.hasMoreElements()) {
@@ -60,7 +83,7 @@ public class LabeledPairLayout implements LayoutManager {
 	public void layoutContainer(Container c) {
 		Insets insets = c.getInsets();
 
-		int labelWidth = getLabelWidth(true);
+		int labelWidth = getTotalLabelWidth();
 
 		int yPos = insets.top;
 
@@ -82,7 +105,7 @@ public class LabeledPairLayout implements LayoutManager {
 	public Dimension minimumLayoutSize(Container c) {
 		Insets insets = c.getInsets();
 
-		int labelWidth = getLabelWidth(true);
+		int labelWidth = getTotalLabelWidth();
 
 		int yPos = insets.top;
 
@@ -113,6 +136,22 @@ public class LabeledPairLayout implements LayoutManager {
 		if(index != -1) {
 			labels.remove(index);
 			fields.remove(index);
+		}
+	}
+
+	public static class LayoutGroup {
+		private final List<LabeledPairLayout> layouts = new ArrayList<>();
+
+		public void add(LabeledPairLayout layout) {
+			layouts.add(layout);
+		}
+
+		public void remove(LabeledPairLayout layout) {
+			layouts.remove(layout);
+		}
+
+		private List<LabeledPairLayout> getLayouts() {
+			return layouts;
 		}
 	}
 }
