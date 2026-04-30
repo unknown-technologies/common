@@ -27,7 +27,7 @@ Features
 - Base64 and Base85 encoder/decoder
 - Push based XML parser + serializer with SAX/DOM-like API
 - JSON parser + serializer
-- XPM image parser
+- X11 XBM / XPM image parser
 - TAR archive parser
 - TELNET implementation including TN3270
 - Art-Net implementation to control DMX lights

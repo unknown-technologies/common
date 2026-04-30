@@ -11,6 +11,7 @@ public class XBM {
 	private final String name;
 	private final int xhot;
 	private final int yhot;
+	private final byte[] words;
 
 	public XBM(String source) throws IOException {
 		String src = source.trim();
@@ -99,7 +100,7 @@ public class XBM {
 		int size = row * height;
 
 		// read image
-		byte[] words = new byte[size];
+		words = new byte[size];
 		for(int i = 0; i < words.length; i++) {
 			Token word = s.scan();
 			if(word.str != null) {
@@ -375,6 +376,21 @@ public class XBM {
 
 	public int getYHot() {
 		return yhot;
+	}
+
+	private int getRowSize() {
+		int width = getWidth();
+		int row = width / 8;
+		if((width & 0x07) != 0) {
+			row++;
+		}
+		return row;
+	}
+
+	public boolean getPixel(int x, int y) {
+		int row = getRowSize();
+		int word = words[y * row + x / 8];
+		return (word & (1 << (x & 0x07))) != 0;
 	}
 
 	public String getName() {
