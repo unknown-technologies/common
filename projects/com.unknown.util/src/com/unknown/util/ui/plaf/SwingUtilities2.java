@@ -68,6 +68,7 @@ import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Modifier;
+import java.nio.charset.StandardCharsets;
 import java.text.AttributedString;
 import java.text.BreakIterator;
 import java.util.HashMap;
@@ -98,6 +99,8 @@ import javax.swing.text.Highlighter;
 import javax.swing.text.JTextComponent;
 import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreePath;
+
+import com.unknown.util.x11.XBM;
 
 /**
  * A collection of utility methods for Swing.
@@ -1322,6 +1325,45 @@ public class SwingUtilities2 {
 			}
 		}
 		return null;
+	}
+
+	/**
+	 * Utility method that creates a {@code UIDefaults.LazyValue} that creates an {@code ImageIcon}
+	 * {@code UIResource} for the specified XBM image file name. The image is loaded using
+	 * {@code getResourceAsStream}, starting with a call to that method on the base class parameter. If it cannot be
+	 * found, searching will continue through the base class' inheritance hierarchy, up to and including
+	 * {@code rootClass}.
+	 *
+	 * @param baseClass
+	 *                the first class to use in searching for the resource
+	 * @param rootClass
+	 *                an ancestor of {@code baseClass} to finish the search at
+	 * @param imageFile
+	 *                the name of the file to be found
+	 * @return a lazy value that creates the {@code ImageIcon} {@code UIResource} for the image, or null if it
+	 *         cannot be found
+	 */
+	public static Object makeXBMIcon(final Class<?> baseClass, final Class<?> rootClass, final String imageFile) {
+		return (UIDefaults.LazyValue) (table) -> {
+			byte[] buffer = getIconBytes(baseClass, rootClass, imageFile);
+
+			if(buffer == null) {
+				return null;
+			}
+			if(buffer.length == 0) {
+				System.err.println("warning: " + imageFile + " is zero-length");
+				return null;
+			}
+
+			try {
+				XBM xbm = new XBM(new String(buffer, StandardCharsets.UTF_8));
+				return new ImageIconUIResource(xbm.getImage());
+			} catch(IOException e) {
+				System.err.println("warning: " + imageFile + " failed to loaded (" +
+						e.getMessage() + ")");
+				return null;
+			}
+		};
 	}
 
 	/**
