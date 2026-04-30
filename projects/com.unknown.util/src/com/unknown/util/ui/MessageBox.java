@@ -13,6 +13,11 @@ import javax.swing.event.HyperlinkListener;
 
 public class MessageBox {
 	public static void showMessageDialog(Component root, String message, String title, int options) {
+		showMessageDialog(root, message, title, options, true);
+	}
+
+	public static void showMessageDialog(Component root, String message, String title, int options,
+			boolean cursor) {
 		// for copying style
 		JLabel label = new JLabel();
 		Font font = label.getFont();
@@ -47,11 +52,17 @@ public class MessageBox {
 		});
 		ep.setEditable(false);
 		ep.setBorder(null);
-		// ep.getCaret().deinstall(ep);
+		if(!cursor) {
+			ep.getCaret().deinstall(ep);
+		}
 		JOptionPane.showMessageDialog(root, ep, title, options);
 	}
 
 	public static void showError(Component root, Throwable t) {
+		showError(root, t, true);
+	}
+
+	public static void showError(Component root, Throwable t, boolean cursor) {
 		t.printStackTrace();
 		String message;
 		if(t.getMessage() != null) {
@@ -60,11 +71,15 @@ public class MessageBox {
 			message = t.toString();
 		}
 		message = "<html><body>" + message.replace("&", "&amp;").replace("<", "&lt;") + "</body></html>";
-		showMessageDialog(root, message, t.getClass().getSimpleName(), JOptionPane.ERROR_MESSAGE);
+		showMessageDialog(root, message, t.getClass().getSimpleName(), JOptionPane.ERROR_MESSAGE, cursor);
 	}
 
 	public static void showError(Component root, String msg) {
+		showError(root, msg, true);
+	}
+
+	public static void showError(Component root, String msg, boolean cursor) {
 		String message = "<html><body>" + msg.replace("&", "&amp;").replace("<", "&lt;") + "</body></html>";
-		showMessageDialog(root, message, "Error", JOptionPane.ERROR_MESSAGE);
+		showMessageDialog(root, message, "Error", JOptionPane.ERROR_MESSAGE, cursor);
 	}
 }
