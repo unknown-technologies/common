@@ -42,10 +42,15 @@ public class Telnet extends InputStream {
 	public final static byte SEND = 1; /* Used by terminal-type negotiation */
 	public final static byte ECHO_OPTION = 1; /* Echo option */
 	public final static byte SUPPRESS_GA = 3; /* Suppress go-ahead option */
+	public final static byte STATUS = 5; /* Status option */
 	public final static byte TIMING_MARK = 6; /* Timing mark option */
+	public final static byte RCTE = 7; /* Remote Controlled Transmission and Echoing option */
+	public final static byte DATA_ENTRY_TERMINAL = 20; /* Data entry terminal option */
 	public final static byte TERMINAL_TYPE = 24; /* Terminal type option */
 	public final static byte NAWS = 31; /* Negotiate About Window Size */
 	public final static byte TERMINAL_SPEED = 32; /* Terminal type option */
+	public final static byte REMOTE_FLOW_CONTROL = 33; /* Remote flow control option */
+	public final static byte LINEMODE = 34; /* Linemode option */
 	public final static byte NEW_ENV = 39; /* New Environment option */
 	public final static byte TN3270E = 40; /* TN3270E option */
 	public final static byte START_TLS = 46; /* Start TLS option */
